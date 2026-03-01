@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { PositionManager } from './components/dashboard/PositionManager'
 import { ProfitDashboard } from './components/dashboard/ProfitDashboard'
 import { NewsFeed } from './components/dashboard/NewsFeed'
@@ -22,6 +22,10 @@ import {
 } from './services/accountService'
 
 function App() {
+  // 用于记录上一次的持仓数据，避免重复保存
+  // 初始值为 null 表示还未初始化
+  const prevPositionsRef = useRef<string | null>(null)
+
   // 持仓数据
   const [positions, setPositions] = useState<Position[]>([])
   const [allPositions, setAllPositions] = useState<Position[]>([])  // 所有持仓（未筛选）
@@ -62,6 +66,9 @@ function App() {
     // 加载持仓
     const loadedPositions = getPositions()
     setAllPositions(loadedPositions)
+
+    // 注意：不在这里设置 prevPositionsRef
+    // 让保存 useEffect 在首次有效数据时自动初始化
   }, [])
 
   // 根据当前账户筛选持仓
@@ -143,8 +150,29 @@ function App() {
 
   // 保存到 localStorage（当 allPositions 变化时）
   useEffect(() => {
+    const currentData = JSON.stringify(allPositions)
+
+    // 场景1：还未初始化（prevPositionsRef 为 null）
+    if (prevPositionsRef.current === null) {
+      // 如果当前数据不为空，说明是初始化后的首次有效数据
+      if (allPositions.length > 0) {
+        prevPositionsRef.current = currentData
+        localStorage.setItem('stock-positions', currentData)
+      }
+      // 如果数据为空，跳过（初始化时状态可能还是空的）
+      return
+    }
+
+    // 场景2：数据没有变化，跳过保存
+    if (currentData === prevPositionsRef.current) {
+      return
+    }
+
+    // 场景3：执行保存
+    prevPositionsRef.current = currentData
+
     if (allPositions.length > 0) {
-      localStorage.setItem('stock-positions', JSON.stringify(allPositions))
+      localStorage.setItem('stock-positions', currentData)
     } else {
       localStorage.removeItem('stock-positions')
     }
