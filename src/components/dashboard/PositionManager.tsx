@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import type {
   Position,
+  PositionBatch,
   Transaction,
   TransactionType,
   EmotionTag,
@@ -38,6 +39,18 @@ import {
 } from '../../services/tagService'
 import { formatCurrency, formatPercent } from '../../lib/utils'
 import { getDefaultAccount } from '../../services/accountService'
+import {
+  isBatchMode,
+  createBatch,
+  addBatchToPosition,
+  updateBatchInPosition,
+  deleteBatchFromPosition,
+  executeBatchSell,
+  convertToBatchMode,
+} from '../../services/batchService'
+import { BatchList } from './PositionBatch/BatchList'
+import { BatchForm } from './PositionBatch/BatchForm'
+import { SellBatchDialog } from './PositionBatch/SellBatchDialog'
 
 interface PositionManagerProps {
   positions: Position[]
@@ -100,6 +113,19 @@ export function PositionManager({
   const [expandedTransactions, setExpandedTransactions] = useState<Set<string>>(
     new Set()
   )
+
+  // 批次相关状态
+  const [expandedBatches, setExpandedBatches] = useState<Set<string>>(new Set())
+  const [batchForm, setBatchForm] = useState<{
+    show: boolean
+    position: Position | null
+    editBatch: PositionBatch | null
+  }>({ show: false, position: null, editBatch: null })
+  const [sellBatchDialog, setSellBatchDialog] = useState<{
+    show: boolean
+    position: Position | null
+    batch: PositionBatch | null
+  }>({ show: false, position: null, batch: null })
 
   // 加载标签
   const [emotionTags, setEmotionTags] = useState<EmotionTag[]>([])
@@ -421,6 +447,90 @@ export function PositionManager({
       deleteReasonTag(id)
       setReasonTags(reasonTags.filter((t) => t.id !== id))
     }
+  }
+
+  // 批次相关处理函数
+  const toggleBatches = (positionId: string) => {
+    setExpandedBatches((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(positionId)) {
+        newSet.delete(positionId)
+      } else {
+        newSet.add(positionId)
+      }
+      return newSet
+    })
+  }
+
+  const handleConvertToBatchMode = (position: Position) => {
+    const updatedPosition = convertToBatchMode(position)
+    const newPositions = positions.map((p) =>
+      p.id === position.id ? updatedPosition : p
+    )
+    onPositionsChange(newPositions)
+    setExpandedBatches((prev) => new Set([...prev, position.id]))
+  }
+
+  const handleAddBatch = (position: Position) => {
+    setBatchForm({ show: true, position, editBatch: null })
+  }
+
+  const handleEditBatch = (position: Position, batch: PositionBatch) => {
+    setBatchForm({ show: true, position, editBatch: batch })
+  }
+
+  const handleDeleteBatch = (position: Position, batchId: string) => {
+    try {
+      const updatedPosition = deleteBatchFromPosition(position, batchId)
+      const newPositions = positions.map((p) =>
+        p.id === position.id ? updatedPosition : p
+      )
+      onPositionsChange(newPositions)
+    } catch {
+      // 批次仍有持仓，无法删除
+    }
+  }
+
+  const handleBatchFormSubmit = (
+    batchData: Omit<PositionBatch, 'id' | 'transactions' | 'totalBuyAmount' | 'totalSellAmount'>
+  ) => {
+    if (!batchForm.position) return
+
+    let updatedPosition: Position
+
+    if (batchForm.editBatch) {
+      // 编辑批次
+      updatedPosition = updateBatchInPosition(
+        batchForm.position,
+        batchForm.editBatch.id,
+        batchData
+      )
+    } else {
+      // 添加新批次
+      const newBatch = createBatch(batchData)
+      updatedPosition = addBatchToPosition(batchForm.position, newBatch)
+    }
+
+    const newPositions = positions.map((p) =>
+      p.id === batchForm.position!.id ? updatedPosition : p
+    )
+    onPositionsChange(newPositions)
+  }
+
+  const handleSellBatch = (position: Position, batch?: PositionBatch) => {
+    setSellBatchDialog({ show: true, position, batch: batch || null })
+  }
+
+  const handleSellBatchConfirm = (
+    position: Position,
+    transaction: Transaction,
+    allocation: { batchId: string; quantity: number }[]
+  ) => {
+    const updatedPosition = executeBatchSell(position, transaction, allocation)
+    const newPositions = positions.map((p) =>
+      p.id === position.id ? updatedPosition : p
+    )
+    onPositionsChange(newPositions)
   }
 
   // 切换交易原因选择
@@ -834,7 +944,57 @@ export function PositionManager({
                           买入{summary.buyCount}笔 · 卖出{summary.sellCount}
                           笔 · 累计买入 {summary.totalBuyQty}股 · 累计卖出{' '}
                           {summary.totalSellQty}股
+                          {isBatchMode(position) && (
+                            <span className="ml-2 px-1.5 py-0.5 bg-primary/10 text-primary rounded text-xs">
+                              批次模式
+                            </span>
+                          )}
                         </div>
+
+                        {/* 批次管理入口 */}
+                        {isBatchMode(position) ? (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleBatches(position.id)}
+                              className="w-full justify-center text-muted-foreground"
+                            >
+                              {expandedBatches.has(position.id) ? (
+                                <>
+                                  收起批次详情{' '}
+                                  <ChevronDown className="h-4 w-4 ml-1 rotate-180" />
+                                </>
+                              ) : (
+                                <>
+                                  查看批次详情 ({position.batches?.length || 0}){' '}
+                                  <ChevronDown className="h-4 w-4 ml-1" />
+                                </>
+                              )}
+                            </Button>
+                            {expandedBatches.has(position.id) && (
+                              <BatchList
+                                position={position}
+                                onAddBatch={() => handleAddBatch(position)}
+                                onEditBatch={(batch) => handleEditBatch(position, batch)}
+                                onDeleteBatch={(batchId) => handleDeleteBatch(position, batchId)}
+                                onSellBatch={(batch) => handleSellBatch(position, batch)}
+                              />
+                            )}
+                          </>
+                        ) : (
+                          position.quantity > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleConvertToBatchMode(position)}
+                              className="w-full justify-center text-muted-foreground"
+                            >
+                              <Package className="h-4 w-4 mr-1" />
+                              转换为批次模式
+                            </Button>
+                          )
+                        )}
 
                         {/* 展开/收起交易历史 */}
                         {(position.transactions?.length || 0) > 0 && (
@@ -1278,6 +1438,28 @@ export function PositionManager({
           </Card>
         </div>
       )}
+
+      {/* 批次表单弹窗 */}
+      <BatchForm
+        open={batchForm.show}
+        onClose={() => setBatchForm({ show: false, position: null, editBatch: null })}
+        onSubmit={handleBatchFormSubmit}
+        editBatch={batchForm.editBatch}
+        stockName={batchForm.position?.name || ''}
+      />
+
+      {/* 批次卖出弹窗 */}
+      <SellBatchDialog
+        open={sellBatchDialog.show}
+        onClose={() => setSellBatchDialog({ show: false, position: null, batch: null })}
+        position={sellBatchDialog.position!}
+        batch={sellBatchDialog.batch}
+        onConfirm={(transaction, allocation) => {
+          handleSellBatchConfirm(sellBatchDialog.position!, transaction, allocation)
+        }}
+        emotionTags={emotionTags}
+        reasonTags={reasonTags}
+      />
     </>
   )
 }

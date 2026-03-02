@@ -25,6 +25,22 @@ export interface Transaction {
   timestamp: number      // 交易时间戳
   emotion?: EmotionTag   // 情绪标签（单选）
   reasons?: ReasonTag[]  // 交易原因（多选）
+  batchId?: string       // 所属批次ID（批次模式下使用）
+}
+
+// 持仓批次
+export interface PositionBatch {
+  id: string                    // 批次ID
+  quantity: number              // 批次数量
+  costPrice: number             // 批次成本价
+  buyDate?: number              // 买入/获得日期（时间戳）
+  unlockDate?: number           // 解禁日期（时间戳）
+  isLocked: boolean             // 是否锁定中（未解禁）
+  tag?: string                  // 自定义标签（如"第一期激励"）
+  note?: string                 // 备注
+  transactions: Transaction[]   // 该批次的交易记录
+  totalBuyAmount: number        // 累计买入金额
+  totalSellAmount: number       // 累计卖出金额
 }
 
 // 股票持仓数据
@@ -43,6 +59,7 @@ export interface Position {
   transactions: Transaction[]  // 交易记录
   totalBuyAmount: number  // 累计买入金额（用于计算成本）
   totalSellAmount: number // 累计卖出金额（用于计算成本）
+  batches?: PositionBatch[] // 批次列表（可选，有值则使用批次模式）
 }
 
 // 股票实时行情
