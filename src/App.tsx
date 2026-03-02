@@ -7,6 +7,7 @@ import { ReviewTab } from './components/dashboard/review/ReviewTab'
 import { AccountSwitcher } from './components/dashboard/AccountSwitcher'
 import { AccountManager } from './components/dashboard/AccountManager'
 import { LineChart, TrendingUp, Newspaper, Database, BookOpen, Menu, X, Wallet, ChevronRight, Building2 } from 'lucide-react'
+import { TCalculatorTrigger } from './components/dashboard/TCalculator'
 import type { Position, ProfitSummary } from './types'
 import type { Account } from './types/account'
 import { calculateProfitSummary, calculateClearedProfit } from './utils/calculations'
@@ -301,6 +302,9 @@ function App() {
                 onOpenManager={handleOpenAccountManager}
               />
             )}
+
+            {/* 做T计算器入口 */}
+            <TCalculatorTrigger />
           </div>
 
           <div className="text-xs text-muted-foreground">
