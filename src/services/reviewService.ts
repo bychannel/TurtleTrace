@@ -155,6 +155,9 @@ class ReviewService {
       }
       lines.push('');
 
+      // 主要指数
+      lines.push('### 主要指数');
+      lines.push('');
       lines.push('| 指数 | 涨跌幅 | 涨跌点数 | 成交额 |');
       lines.push('|------|--------|----------|--------|');
       for (const idx of review.marketData.indices) {
@@ -162,6 +165,53 @@ class ReviewService {
         lines.push(`| ${idx.name} | ${changeStr} | ${idx.changeAmount.toFixed(2)} | ${(idx.amount / 100000000).toFixed(2)}亿 |`);
       }
       lines.push('');
+
+      // 涨跌分布数据
+      if (review.marketData.marketBreadth) {
+        const breadth = review.marketData.marketBreadth;
+        lines.push('### 涨跌分布');
+        lines.push('');
+        lines.push(`| 上涨 | 下跌 | 涨停 | 跌停 |`);
+        lines.push(`|------|------|------|------|`);
+        lines.push(`| ${breadth.upCount} | ${breadth.downCount} | ${breadth.limitUp} | ${breadth.limitDown} |`);
+        lines.push('');
+
+        // 分布柱状图（使用表格形式，避免乱码）
+        if (breadth.distribution && breadth.distribution.length > 0) {
+          const labels = ['跌停', '<-9%', '-9~-8%', '-8~-7%', '-7~-6%', '-6~-5%', '-5~-4%', '-4~-3%', '-3~-2%', '-2~-1%', '-1~0%', '平盘', '0~1%', '1~2%', '2~3%', '3~4%', '4~5%', '5~6%', '6~7%', '7~8%', '8~9%', '9~10%', '涨停'];
+          const maxVal = Math.max(...breadth.distribution);
+          lines.push('**区间分布表**:');
+          lines.push('');
+          lines.push('| 区间 | 数量 | 占比 |');
+          lines.push('|------|------|------|');
+          const total = breadth.distribution.reduce((a, b) => a + b, 0);
+          const len = Math.min(breadth.distribution.length, 23);
+          for (let i = 0; i < len; i++) {
+            const count = breadth.distribution[i];
+            const ratio = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
+            const prefix = i < 11 ? '' : (i > 11 ? '+' : '');
+            lines.push(`| ${prefix}${labels[i]} | ${count} | ${ratio}% |`);
+          }
+          lines.push('');
+        }
+      }
+
+      // 板块轮动数据
+      if (review.marketData.sectorRotation && review.marketData.sectorRotation.length > 0) {
+        lines.push('### 板块轮动（按涨幅排序）');
+        lines.push('');
+        lines.push('| 板块 | 涨幅 | 主力净流入 | 主力净占比 | 领涨股 |');
+        lines.push('|------|------|------------|------------|--------|');
+        for (const sector of review.marketData.sectorRotation.slice(0, 10)) {
+          const changeStr = sector.change >= 0 ? `+${sector.change.toFixed(2)}%` : `${sector.change.toFixed(2)}%`;
+          const inflowStr = sector.mainNetInflow >= 0
+            ? `+${(sector.mainNetInflow / 100000000).toFixed(2)}亿`
+            : `${(sector.mainNetInflow / 100000000).toFixed(2)}亿`;
+          const ratioStr = sector.mainNetRatio >= 0 ? `+${sector.mainNetRatio.toFixed(2)}%` : `${sector.mainNetRatio.toFixed(2)}%`;
+          lines.push(`| ${sector.name} | ${changeStr} | ${inflowStr} | ${ratioStr} | ${sector.topStock || '-'} |`);
+        }
+        lines.push('');
+      }
     }
 
     // 2. 板块追踪与资金流向
