@@ -206,7 +206,7 @@ export function WeeklyReviewViewer({ onEditWeek }: WeeklyReviewViewerProps) {
               )}
 
               {/* 二、本周成果评估 */}
-              {selectedReview.achievements && (
+              {selectedReview.achievements && selectedReview.achievements.marketPerformance && selectedReview.achievements.sectorPerformance && (
                 <Card>
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -354,7 +354,7 @@ export function WeeklyReviewViewer({ onEditWeek }: WeeklyReviewViewerProps) {
               )}
 
               {/* 五、下周核心策略制定 */}
-              {selectedReview.nextWeekStrategy && (
+              {selectedReview.nextWeekStrategy && selectedReview.nextWeekStrategy.riskControl && (
                 <Card>
                   <CardContent className="p-6">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">

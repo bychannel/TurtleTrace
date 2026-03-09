@@ -141,7 +141,7 @@ class WeeklyReviewService {
     }
 
     // 二、本周成果评估
-    if (review.achievements) {
+    if (review.achievements && review.achievements.marketPerformance && review.achievements.sectorPerformance) {
       lines.push('## 二、本周成果评估');
       lines.push('');
 
@@ -161,7 +161,7 @@ class WeeklyReviewService {
       const sectorChange = ach.sectorPerformance.sectorChange >= 0 ? '+' : '';
       lines.push(`| 主线板块收益 | ${sectorChange}${ach.sectorPerformance.sectorChange.toFixed(2)}% vs 大盘 ${ach.marketPerformance.shanghaiChange >= 0 ? '+' : ''}${ach.marketPerformance.shanghaiChange.toFixed(2)}% |`);
 
-      if (ach.sectorPerformance.outperformance !== 0) {
+      if (ach.sectorPerformance.outperformance !== undefined && ach.sectorPerformance.outperformance !== 0) {
         const outperf = ach.sectorPerformance.outperformance >= 0 ? '+' : '';
         lines.push(`| 跑赢大盘 | ${outperf}${ach.sectorPerformance.outperformance.toFixed(2)}% |`);
       }
@@ -242,7 +242,7 @@ class WeeklyReviewService {
     }
 
     // 五、下周核心策略制定
-    if (review.nextWeekStrategy) {
+    if (review.nextWeekStrategy && review.nextWeekStrategy.riskControl) {
       lines.push('## 五、下周核心策略制定');
       lines.push('');
 
