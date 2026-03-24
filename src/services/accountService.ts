@@ -323,7 +323,6 @@ export function getAllAccountStats(): AccountStats[] {
 
 // 获取汇总统计
 export function getTotalStats(): AccountStats {
-  const accounts = getAccounts()
   const allPositions = getAllPositions()
   const activePositions = allPositions.filter(p => p.quantity > 0)
 

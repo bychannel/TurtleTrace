@@ -4,7 +4,6 @@ import type { MarketEvent, EventFilter, RepeatRule } from '../types/event';
 import { format, addDays, addWeeks, addMonths, addYears, isBefore, isAfter, parseISO } from 'date-fns';
 
 const EVENTS_STORAGE_KEY = 'turtletrace_events';
-const CUSTOM_TAGS_STORAGE_KEY = 'turtletrace_event_custom_tags';
 
 /**
  * 消息事件服务
@@ -194,6 +193,7 @@ class EventService {
       eventType: data.eventType || 'fixed',
       importance: data.importance || 'medium',
       status: data.status || 'pending',
+      tags: data.tags || [],
       createdAt: data.createdAt || now,
       updatedAt: now,
     };

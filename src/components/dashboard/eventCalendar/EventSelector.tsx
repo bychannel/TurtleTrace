@@ -17,7 +17,6 @@ export function EventSelector({
   selectedEventIds,
   onConfirm,
   onClose,
-  defaultDate,
 }: EventSelectorProps) {
   const [events, setEvents] = useState<MarketEvent[]>([]);
   const [loading, setLoading] = useState(true);

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Calendar, ChevronRight, ExternalLink, Plus } from 'lucide-react';
 import type { MarketEvent } from '../../../types/event';
 import { eventService } from '../../../services/eventService';
-import { EventCard } from './EventCard';
 import { cn } from '../../../lib/utils';
 
 interface TodayEventsProps {

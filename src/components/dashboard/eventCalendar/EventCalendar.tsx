@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Calendar, List, LayoutGrid, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Calendar, List, LayoutGrid } from 'lucide-react';
 import type { MarketEvent, EventFilter } from '../../../types/event';
 import { eventService } from '../../../services/eventService';
 import { MonthView } from './MonthView';

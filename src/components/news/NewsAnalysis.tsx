@@ -87,7 +87,7 @@ function getExpectationConfig(expectation?: ExpectationGap) {
   return expectation ? (expectationGapConfig[expectation] ?? defaultExpectationConfig) : defaultExpectationConfig
 }
 
-export function NewsAnalysisComponent({ analysis, newsTitle, onClose }: NewsAnalysisProps) {
+export function NewsAnalysisComponent({ analysis, newsTitle }: NewsAnalysisProps) {
   const [showKeyFacts, setShowKeyFacts] = useState(true)
   const [showShareDialog, setShowShareDialog] = useState(false)
 

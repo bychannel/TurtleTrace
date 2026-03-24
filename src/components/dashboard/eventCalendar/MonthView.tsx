@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, Calendar, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import type { MarketEvent } from '../../../types/event';
 import { EventDot } from './EventCard';
 import { cn } from '../../../lib/utils';
@@ -11,7 +11,7 @@ interface MonthViewProps {
   onAddEvent: (date: string) => void;
 }
 
-export function MonthView({ events, selectedDate, onSelectDate, onAddEvent }: MonthViewProps) {
+export function MonthView({ events, selectedDate, onSelectDate }: MonthViewProps) {
   const [currentMonth, setCurrentMonth] = useState(() => {
     const date = new Date(selectedDate);
     return { year: date.getFullYear(), month: date.getMonth() };

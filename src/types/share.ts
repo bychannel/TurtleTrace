@@ -1,6 +1,6 @@
 import type { DailyReview } from './review'
 import type { WeeklyReview } from './weeklyReview'
-import type { Position, ProfitSummary, Transaction } from '.'
+import type { Position, ProfitSummary } from '.'
 
 /** 分享内容模块 */
 export interface ShareModules {

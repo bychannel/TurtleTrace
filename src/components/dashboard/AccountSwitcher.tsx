@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Building2, Layers, Users, Plus, Settings, Check } from 'lucide-react'
-import type { Account } from '../../types/account'
-import { ACCOUNT_COLORS } from '../../types/account'
+import { Building2, Layers, Users, ChevronDown, Check, Settings } from 'lucide-react'
+import type { Account } from '../../types'
 
 interface AccountSwitcherProps {
   accounts: Account[]

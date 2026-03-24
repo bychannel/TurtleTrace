@@ -9,7 +9,6 @@ import {
   Image,
   FileDown,
   Eye,
-  Settings2,
   Palette,
   Shield,
 } from 'lucide-react'

@@ -1,6 +1,9 @@
 // 导出分享相关类型
 export * from './share'
 
+// 导出账户类型
+export * from './account'
+
 // 导出周复盘类型
 export * from './weeklyReview'
 

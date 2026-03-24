@@ -23,7 +23,7 @@ interface ReviewTabProps {
   profitSummary?: ProfitSummary;
 }
 
-export function ReviewTab({ currentAccountId, accounts, positions = [], profitSummary }: ReviewTabProps) {
+export function ReviewTab({ positions = [], profitSummary }: ReviewTabProps) {
   const [reviewType, setReviewType] = useState<ReviewType>('daily');
   const [viewMode, setViewMode] = useState<ViewMode>('view');
   const [selectedDate, setSelectedDate] = useState(() => {

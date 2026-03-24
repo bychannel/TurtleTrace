@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, Save, Trash2, ChevronDown, ChevronRight, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
+import { X, Save, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import type { MarketEvent, EventType, EventImportance, EventStatus, RepeatType } from '../../../types/event';
 import { eventService } from '../../../services/eventService';
 import { TagSelector } from './TagSelector';
-import { cn } from '../../../lib/utils';
 
 interface EventEditorProps {
   event?: MarketEvent | null;

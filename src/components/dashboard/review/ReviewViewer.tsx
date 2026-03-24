@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Trash2, Download, Edit, Share2, FileText, TrendingUp, TrendingDown, Minus, Sparkles, Loader2, Image } from 'lucide-react';
+import { Calendar, Trash2, Download, Edit, Share2, FileText, TrendingUp, TrendingDown, Minus, Sparkles, Image } from 'lucide-react';
 import { Card } from '../../ui/card';
 import { Badge } from '../../ui/badge';
-import { Button } from '../../ui/button';
 import { reviewService } from '../../../services/reviewService';
 import type { DailyReview } from '../../../types/review';
 import type { Position, ProfitSummary } from '../../../types';

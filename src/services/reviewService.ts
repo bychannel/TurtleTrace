@@ -179,7 +179,6 @@ class ReviewService {
         // 分布柱状图（使用表格形式，避免乱码）
         if (breadth.distribution && breadth.distribution.length > 0) {
           const labels = ['跌停', '<-9%', '-9~-8%', '-8~-7%', '-7~-6%', '-6~-5%', '-5~-4%', '-4~-3%', '-3~-2%', '-2~-1%', '-1~0%', '平盘', '0~1%', '1~2%', '2~3%', '3~4%', '4~5%', '5~6%', '6~7%', '7~8%', '8~9%', '9~10%', '涨停'];
-          const maxVal = Math.max(...breadth.distribution);
           lines.push('**区间分布表**:');
           lines.push('');
           lines.push('| 区间 | 数量 | 占比 |');

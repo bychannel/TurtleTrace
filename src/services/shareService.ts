@@ -6,11 +6,9 @@ import type {
   PrivacyConfig,
   ExportResult,
   ExportFormat,
-  IMAGE_SIZE_CONFIG,
 } from '../types/share'
-import { PRIVACY_PRESETS, IMAGE_SIZE_CONFIG as imageSizeConfig } from '../types/share'
-import type { Position, ProfitSummary, Transaction } from '../types'
-import type { DailyReview, PositionReviewItem } from '../types/review'
+import { IMAGE_SIZE_CONFIG as imageSizeConfig } from '../types/share'
+import type { Position, ProfitSummary } from '../types'
 
 /**
  * 分享服务
@@ -137,7 +135,7 @@ class ShareService {
    */
   async generateImage(
     element: HTMLElement,
-    width: number = 1080
+    _width: number = 1080
   ): Promise<ExportResult> {
     try {
       const canvas = await html2canvas(element, {

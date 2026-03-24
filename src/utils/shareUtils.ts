@@ -115,7 +115,7 @@ function drawTag(ctx: CanvasRenderingContext2D, text: string, x: number, y: numb
 
 // 加载并绘制 Logo 图片
 async function drawLogo(ctx: CanvasRenderingContext2D, x: number, y: number, height: number): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const img = new Image()
     img.crossOrigin = 'anonymous'
     img.onload = () => {
@@ -227,7 +227,7 @@ export async function generateShareImage(analysis: NewsAnalysis, newsTitle: stri
 
     let tagX = padding
     const tagSpacing = 12
-    analysis.entities.forEach((entity, index) => {
+    analysis.entities.forEach((entity) => {
       const tagText = entity
       const tagWidth = ctx.measureText(tagText).width + 24
       if (tagX + tagWidth > width - padding) {

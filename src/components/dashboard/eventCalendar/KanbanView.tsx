@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { Pin, RefreshCw, Zap } from 'lucide-react';
 import type { MarketEvent, EventType } from '../../../types/event';
-import { EventCard } from './EventCard';
 import { cn } from '../../../lib/utils';
 
 interface KanbanViewProps {

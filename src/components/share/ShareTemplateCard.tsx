@@ -22,9 +22,6 @@ export const ShareTemplateCard: React.FC<ShareTemplateCardProps> = ({
   const { dailyReview, profitSummary } = data
 
   const date = dailyReview?.date || new Date().toISOString().split('T')[0]
-  const watermark = style.customWatermark
-    ? `🐢 龟迹复盘 | ${style.customWatermark}`
-    : '🐢 龟迹复盘'
 
   // 格式化函数
   const formatPercent = (val: number) => shareService.formatPercent(val)

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Calendar, Search, Filter } from 'lucide-react';
+import { Calendar, Search } from 'lucide-react';
 import type { MarketEvent, EventFilter, EventType, EventImportance } from '../../../types/event';
 import { EventCard } from './EventCard';
 import { cn } from '../../../lib/utils';

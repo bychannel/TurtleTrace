@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Badge } from '../ui/badge'
 import {
   Plus,
@@ -11,7 +11,6 @@ import {
   Layers,
   Users,
   X,
-  Check,
   Star,
   Wallet,
 } from 'lucide-react'
@@ -22,7 +21,6 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
-  getAccountStats,
   getAllAccountStats,
   getTotalStats,
   setDefaultAccount,
@@ -63,7 +61,7 @@ function getAccountTypeName(type: string) {
   }
 }
 
-export function AccountManager({ onClose, onAccountChange }: AccountManagerProps) {
+export function AccountManager({ onAccountChange }: AccountManagerProps) {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [accountStats, setAccountStats] = useState<AccountStats[]>([])
   const [totalStats, setTotalStats] = useState<AccountStats | null>(null)

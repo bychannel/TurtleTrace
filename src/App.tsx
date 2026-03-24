@@ -40,7 +40,6 @@ function App() {
   // 账户相关状态
   const [accounts, setAccounts] = useState<Account[]>([])
   const [currentAccountId, setCurrentAccountId] = useState<string | null>(null)  // null 表示全部账户
-  const [showAccountManager, setShowAccountManager] = useState(false)
 
   // UI 状态
   const [showClearedPositionsInOverview, setShowClearedPositionsInOverview] = useState(false)
@@ -118,7 +117,6 @@ function App() {
   // 打开账户管理
   const handleOpenAccountManager = useCallback(() => {
     setActiveTab('accounts')
-    setShowAccountManager(true)
   }, [])
 
   // 账户变化后刷新数据

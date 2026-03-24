@@ -1,4 +1,4 @@
-import { Pin, RefreshCw, Zap, Calendar, AlertCircle } from 'lucide-react';
+import { Pin, RefreshCw, Zap, Calendar } from 'lucide-react';
 import type { MarketEvent, EventType, EventImportance } from '../../../types/event';
 import { getTagById } from '../../../data/presetEventTags';
 import { cn } from '../../../lib/utils';
@@ -146,8 +146,6 @@ export function EventCard({ event, onClick, compact = false }: EventCardProps) {
 
 // 迷你事件指示点（用于日历视图）
 export function EventDot({ event }: { event: MarketEvent }) {
-  const typeConfig = eventTypeConfig[event.eventType];
-
   return (
     <div
       className={cn(
