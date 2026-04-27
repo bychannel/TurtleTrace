@@ -5,3 +5,4 @@ export type { DailyReview, MarketReviewData, MarketBreadthData, SectorRotationDa
 export type { WeeklyReview, CoreGoalsData, AchievementsData, MarketPerformance, SectorPerformance, ResourceAnalysisData, MarketRhythmData, EmotionCyclePhase, NextWeekStrategyData, PositionPlan, FocusTarget, WeeklyRiskControl } from '../../frontend/types/weeklyReview';
 export type { MarketEvent, EventType, EventImportance, EventStatus, RepeatType, RepeatRule, EventTag, EventFilter } from '../../frontend/types/event';
 export type { TCalcInput, TCalcResult, TCalcRecord, FeeConfig } from '../../frontend/types/tCalculator';
+export { DEFAULT_FEE_CONFIG } from '../../frontend/types/tCalculator';

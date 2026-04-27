@@ -1,7 +1,9 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import crypto from 'crypto';
-import cors from './middleware/cors';
+import fs from 'fs/promises';
+import path from 'path';
 import redis from './services/redis';
 import accountsRouter from './routes/accounts';
 import positionsRouter from './routes/positions';
@@ -14,7 +16,11 @@ import aiRouter from './routes/ai';
 import settingsRouter from './routes/settings';
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'X-API-Key'],
+}));
 app.use(express.json());
 
 // API Key initialization
@@ -22,21 +28,27 @@ async function initApiKey() {
   const envKey = process.env.API_KEY;
   if (envKey) {
     await redis.set('turtletrace:auth:api_key', envKey);
+    await fs.writeFile('.api-key', envKey);
     console.log('Using API_KEY from environment');
   } else {
     let key = await redis.get('turtletrace:auth:api_key');
     if (!key) {
       key = crypto.randomUUID();
       await redis.set('turtletrace:auth:api_key', key);
-      await require('fs').promises.writeFile('.api-key', key);
+      await fs.writeFile('.api-key', key);
       console.log('Generated new API Key:', key);
     }
   }
 }
 
 // Serve .api-key file
-app.use('/api-key', (req, res) => {
-  res.sendFile('.api-key', { root: process.cwd() });
+app.use('/api-key', async (req, res) => {
+  try {
+    const content = await fs.readFile(path.resolve(process.cwd(), '.api-key'), 'utf-8');
+    res.send(content);
+  } catch {
+    res.status(404).send('Not found');
+  }
 });
 
 // Route registration
