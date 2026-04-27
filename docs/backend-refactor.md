@@ -625,7 +625,8 @@ export { initApiKey };
 - `saveReview(review)` → `api.post('/reviews/weekly', review)`
 - `deleteReview(weekLabel)` → `api.delete('/reviews/weekly/' + weekLabel)`
 
-#### Step 2.6 重构 `src/services/tCalculatorService.ts`
+#### Step 2.6 重构 `src/services/tCalculatorService.ts` ✅
+> 状态：已完成（2026-04-27）
 - `getFeeConfig()` → `api.get('/tcalc/config')`
 - `saveFeeConfig(config)` → `api.put('/tcalc/config', config)`
 - `getHistory()` → `api.get('/tcalc/history')`
