@@ -380,7 +380,8 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
 > 状态：已完成（2026-04-27）
 从 `src/types/index.ts`、`src/types/account.ts`、`src/types/review.ts`、`src/types/weeklyReview.ts` 复制所有 interface 到此文件，确保后端类型与前端一致。
 
-#### Step 1.7 创建 `server/services/accountService.ts` — 账户业务逻辑
+#### Step 1.7 创建 `server/services/accountService.ts` — 账户业务逻辑 ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 import redis from './redis';
 import { Account, AccountsStorage } from '../types';
