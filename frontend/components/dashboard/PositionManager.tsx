@@ -132,8 +132,8 @@ export function PositionManager({
   const [reasonTags, setReasonTags] = useState<ReasonTag[]>([])
 
   useEffect(() => {
-    setEmotionTags(getEmotionTags())
-    setReasonTags(getReasonTags())
+    getEmotionTags().then(setEmotionTags)
+    getReasonTags().then(setReasonTags)
   }, [])
 
   // 点击外部关闭搜索结果

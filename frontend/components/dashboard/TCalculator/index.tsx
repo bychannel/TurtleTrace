@@ -39,7 +39,7 @@ export function TCalculator({ open, onOpenChange }: TCalculatorProps) {
           setResult(calcResult)
         }
       }
-      setHistory(getHistory())
+      getHistory().then(setHistory)
     }
   }, [open, feeConfig])
 

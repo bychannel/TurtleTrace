@@ -14,6 +14,7 @@ import {
   Star,
   Wallet,
 } from 'lucide-react'
+import type { Position } from '../../types'
 import type { Account, AccountStats, AccountType, CreateAccountInput, UpdateAccountInput } from '../../types/account'
 import { BROKERS, ACCOUNT_COLORS } from '../../types/account'
 import {
@@ -24,7 +25,7 @@ import {
   getAllAccountStats,
   getTotalStats,
   setDefaultAccount,
-  getPositionsForAccount,
+  getAllPositions,
 } from '../../services/accountService'
 import { formatCurrency, formatPercent } from '../../lib/utils'
 
@@ -68,6 +69,7 @@ export function AccountManager({ onAccountChange }: AccountManagerProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [error, setError] = useState('')
+  const [allPositions, setAllPositions] = useState<Position[]>([])
 
   // 表单状态
   const [formName, setFormName] = useState('')
@@ -78,11 +80,14 @@ export function AccountManager({ onAccountChange }: AccountManagerProps) {
   const [formIsDefault, setFormIsDefault] = useState(false)
 
   // 加载数据
-  const loadData = () => {
-    const accountsData = getAccounts()
+  const loadData = async () => {
+    const accountsData = await getAccounts()
     setAccounts(accountsData)
-    setAccountStats(getAllAccountStats())
+    const stats = await getAllAccountStats()
+    setAccountStats(stats)
     setTotalStats(getTotalStats())
+    const positionsData = await getAllPositions()
+    setAllPositions(positionsData)
   }
 
   useEffect(() => {
@@ -365,7 +370,7 @@ export function AccountManager({ onAccountChange }: AccountManagerProps) {
         {accounts.map((account) => {
           const stats = accountStats.find(s => s.accountId === account.id)
           const Icon = getAccountIcon(account.type)
-          const positionCount = getPositionsForAccount(account.id).filter(p => p.quantity > 0).length
+          const positionCount = allPositions.filter(p => p.accountId === account.id && p.quantity > 0).length
 
           return (
             <Card key={account.id} className="card-hover">
