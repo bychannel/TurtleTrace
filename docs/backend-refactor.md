@@ -618,7 +618,8 @@ export { initApiKey };
 - `saveReview(review)` → `api.post('/reviews/daily', review)`
 - `deleteReview(date)` → `api.delete('/reviews/daily/' + date)`
 
-#### Step 2.5 重构 `src/services/weeklyReviewService.ts`
+#### Step 2.5 重构 `src/services/weeklyReviewService.ts` ✅
+> 状态：已完成（2026-04-27）
 - `getAllReviews()` → `api.get('/reviews/weekly')`
 - `getReview(weekLabel)` → `api.get('/reviews/weekly/' + weekLabel)`
 - `saveReview(review)` → `api.post('/reviews/weekly', review)`

@@ -1,7 +1,6 @@
 import type { WeeklyReview } from '../types/weeklyReview';
 import { getWeekRange, getCurrentWeekLabel } from '../types/weeklyReview';
-
-const WEEKLY_REVIEWS_STORAGE_KEY = 'stock_app_weekly_reviews';
+import { api } from '../lib/apiClient';
 
 /**
  * 每周复盘服务
@@ -13,8 +12,7 @@ class WeeklyReviewService {
    */
   async getReview(weekLabel: string): Promise<WeeklyReview | null> {
     try {
-      const reviews = await this.getAllReviews();
-      return reviews.find(r => r.weekLabel === weekLabel) || null;
+      return await api.get<WeeklyReview>(`/reviews/weekly/${weekLabel}`);
     } catch (error) {
       console.error('获取周复盘失败:', error);
       return null;
@@ -26,17 +24,7 @@ class WeeklyReviewService {
    */
   async saveReview(review: WeeklyReview): Promise<boolean> {
     try {
-      const reviews = await this.getAllReviews();
-      const existingIndex = reviews.findIndex(r => r.weekLabel === review.weekLabel);
-
-      if (existingIndex >= 0) {
-        reviews[existingIndex] = { ...review, updatedAt: Date.now() };
-      } else {
-        reviews.push(review);
-      }
-
-      reviews.sort((a, b) => b.weekLabel.localeCompare(a.weekLabel));
-      localStorage.setItem(WEEKLY_REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+      await api.post<WeeklyReview>('/reviews/weekly', review);
       return true;
     } catch (error) {
       console.error('保存周复盘失败:', error);
@@ -49,8 +37,7 @@ class WeeklyReviewService {
    */
   async getAllReviews(): Promise<WeeklyReview[]> {
     try {
-      const data = localStorage.getItem(WEEKLY_REVIEWS_STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      return await api.get<WeeklyReview[]>('/reviews/weekly');
     } catch (error) {
       console.error('获取周复盘列表失败:', error);
       return [];
@@ -62,8 +49,7 @@ class WeeklyReviewService {
    */
   async getReviewsByYear(year: number): Promise<WeeklyReview[]> {
     try {
-      const reviews = await this.getAllReviews();
-      return reviews.filter(r => r.weekLabel.startsWith(`${year}-`));
+      return await api.get<WeeklyReview[]>(`/reviews/weekly?year=${year}`);
     } catch (error) {
       console.error('获取年度周复盘失败:', error);
       return [];
@@ -75,9 +61,7 @@ class WeeklyReviewService {
    */
   async deleteReview(weekLabel: string): Promise<boolean> {
     try {
-      const reviews = await this.getAllReviews();
-      const filtered = reviews.filter(r => r.weekLabel !== weekLabel);
-      localStorage.setItem(WEEKLY_REVIEWS_STORAGE_KEY, JSON.stringify(filtered));
+      await api.delete(`/reviews/weekly/${weekLabel}`);
       return true;
     } catch (error) {
       console.error('删除周复盘失败:', error);
@@ -313,7 +297,6 @@ class WeeklyReviewService {
     const review = await this.getReview(weekLabel);
     if (!review) return;
 
-    // 获取 logo 的 base64
     const logoBase64 = await this.getLogoBase64();
 
     const printWindow = window.open('', '_blank');
@@ -379,9 +362,6 @@ class WeeklyReviewService {
     }, 500);
   }
 
-  /**
-   * 获取 logo 的 base64 编码
-   */
   private async getLogoBase64(): Promise<string> {
     try {
       const response = await fetch('/src/assets/TurtleTraceLogo.png');
@@ -397,9 +377,6 @@ class WeeklyReviewService {
     }
   }
 
-  /**
-   * 简单的 Markdown 转 HTML
-   */
   private markdownToHtml(markdown: string): string {
     let html = markdown;
 
@@ -411,8 +388,6 @@ class WeeklyReviewService {
     html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
     html = html.replace(/`(.+?)`/g, '<code>$1</code>');
     html = html.replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
-
-    // Blockquote
     html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
 
     html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
