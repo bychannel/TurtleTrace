@@ -1,5 +1,7 @@
 // AI服务类型定义
 
+import { api } from '../lib/apiClient';
+
 export type Direction = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL'
 export type Level = 'HIGH' | 'MEDIUM' | 'LOW'
 export type Sentiment = 'BULLISH' | 'BEARISH' | 'NEUTRAL'
@@ -154,9 +156,11 @@ export async function analyzeNews(
 /**
  * 获取AI配置
  */
-export function getAiConfig(): { endpoint: string; apiKey: string } {
-  return {
-    endpoint: localStorage.getItem('ai-endpoint') || '',
-    apiKey: localStorage.getItem('ai-api-key') || '',
+export async function getAiConfig(): Promise<{ endpoint: string; apiKey: string }> {
+  try {
+    const config = await api.get<{ endpoint: string; apiKey: string }>('/ai/config');
+    return config;
+  } catch {
+    return { endpoint: '', apiKey: '' };
   }
 }

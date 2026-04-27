@@ -650,7 +650,8 @@ export { initApiKey };
 - `getReasonTags()` → `api.get('/tags/reasons')`
 - `saveReasonTags(tags)` → `api.put('/tags/reasons', tags)`
 
-#### Step 2.9 重构 `src/services/aiService.ts`
+#### Step 2.9 重构 `src/services/aiService.ts` ✅
+> 状态：已完成（2026-04-27）
 `getAiConfig()` 从 localStorage 读取改为 `api.get('/ai/config')`，其余不变（外部 AI 调用不经过后端）。
 
 #### Step 2.10 修改 `src/App.tsx` 调用 `initApiKey`
