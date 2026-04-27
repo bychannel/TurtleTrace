@@ -465,7 +465,8 @@ export default router;
 
 按相同模式创建：`routes/positions.ts`、`routes/reviews.ts`、`routes/weeklyReviews.ts`、`routes/events.ts`、`routes/tcalc.ts`、`routes/ai.ts`、`routes/settings.ts`。
 
-#### Step 1.10 创建 `server/index.ts` — 服务入口
+#### Step 1.10 创建 `server/index.ts` — 服务入口 ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 import 'dotenv/config';
 import express from 'express';
