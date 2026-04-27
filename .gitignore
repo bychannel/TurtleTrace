@@ -27,3 +27,6 @@ dist-ssr
 # temp data
 tmp_data
 
+# API Key (auto-generated, do not commit)
+.api-key
+
