@@ -611,7 +611,8 @@ export { initApiKey };
 - `updatePosition(position)` → `api.put('/positions/' + position.id, position)`
 - `deletePosition(positionId)` → `api.delete('/positions/' + positionId)`
 
-#### Step 2.4 重构 `src/services/reviewService.ts`
+#### Step 2.4 重构 `src/services/reviewService.ts` ✅
+> 状态：已完成（2026-04-27）
 - `getAllReviews()` → `api.get('/reviews/daily')`
 - `getReview(date)` → `api.get('/reviews/daily/' + date)`
 - `saveReview(review)` → `api.post('/reviews/daily', review)`

@@ -1,6 +1,5 @@
 import type { DailyReview } from '../types/review';
-
-const REVIEWS_STORAGE_KEY = 'stock_app_reviews';
+import { api } from '../lib/apiClient';
 
 /**
  * 每日复盘服务
@@ -12,8 +11,7 @@ class ReviewService {
    */
   async getReview(date: string): Promise<DailyReview | null> {
     try {
-      const reviews = await this.getAllReviews();
-      return reviews.find(r => r.date === date) || null;
+      return await api.get<DailyReview>(`/reviews/daily/${date}`);
     } catch (error) {
       console.error('获取复盘失败:', error);
       return null;
@@ -25,21 +23,7 @@ class ReviewService {
    */
   async saveReview(review: DailyReview): Promise<boolean> {
     try {
-      const reviews = await this.getAllReviews();
-      const existingIndex = reviews.findIndex(r => r.date === review.date);
-
-      if (existingIndex >= 0) {
-        // 更新现有记录
-        reviews[existingIndex] = { ...review, updatedAt: Date.now() };
-      } else {
-        // 添加新记录
-        reviews.push(review);
-      }
-
-      // 按日期降序排序
-      reviews.sort((a, b) => b.date.localeCompare(a.date));
-
-      localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(reviews));
+      await api.post<DailyReview>('/reviews/daily', review);
       return true;
     } catch (error) {
       console.error('保存复盘失败:', error);
@@ -52,8 +36,7 @@ class ReviewService {
    */
   async getAllReviews(): Promise<DailyReview[]> {
     try {
-      const data = localStorage.getItem(REVIEWS_STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      return await api.get<DailyReview[]>('/reviews/daily');
     } catch (error) {
       console.error('获取复盘列表失败:', error);
       return [];
@@ -65,8 +48,7 @@ class ReviewService {
    */
   async getReviewsByRange(startDate: string, endDate: string): Promise<DailyReview[]> {
     try {
-      const reviews = await this.getAllReviews();
-      return reviews.filter(r => r.date >= startDate && r.date <= endDate);
+      return await api.get<DailyReview[]>(`/reviews/daily?startDate=${startDate}&endDate=${endDate}`);
     } catch (error) {
       console.error('获取日期范围复盘失败:', error);
       return [];
@@ -78,9 +60,7 @@ class ReviewService {
    */
   async deleteReview(date: string): Promise<boolean> {
     try {
-      const reviews = await this.getAllReviews();
-      const filtered = reviews.filter(r => r.date !== date);
-      localStorage.setItem(REVIEWS_STORAGE_KEY, JSON.stringify(filtered));
+      await api.delete(`/reviews/daily/${date}`);
       return true;
     } catch (error) {
       console.error('删除复盘失败:', error);
