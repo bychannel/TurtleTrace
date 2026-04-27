@@ -407,7 +407,9 @@ export async function updateAccount(id: string, input: UpdateAccountInput): Prom
 export async function deleteAccount(id: string): Promise<void> { ... }
 ```
 
-#### Step 1.8 创建 `server/services/positionService.ts` — 持仓业务逻辑
+#### Step 1.8 创建 `server/services/positionService.ts` — 持仓业务逻辑 ✅
+> 状态：已完成（2026-04-27） ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 import redis from './redis';
 import { Position } from '../types';
