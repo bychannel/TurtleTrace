@@ -355,7 +355,8 @@ export default cors({
 });
 ```
 
-#### Step 1.5 创建 `server/middleware/auth.ts` — API Key 验证
+#### Step 1.5 创建 `server/middleware/auth.ts` — API Key 验证 ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 import { Request, Response, NextFunction } from 'express';
 import redis from '../services/redis';
