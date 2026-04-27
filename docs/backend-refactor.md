@@ -22,8 +22,8 @@
 
 ```
 turtletrace/
-├── src/                          # 前端（现有）
-├── server/                       # 新增：Express 后端
+├── frontend/                          # 前端（现有）
+├── backend/                       # 新增：Express 后端
 │   ├── index.ts                  # 服务入口
 │   ├── routes/                   # 路由
 │   │   ├── accounts.ts           # 账户路由
@@ -144,17 +144,17 @@ turtletrace/
 
 | 文件 | 改动 |
 |---|---|
-| `src/services/accountService.ts` | 改为调用 HTTP API |
-| `src/services/reviewService.ts` | 改为调用 HTTP API |
-| `src/services/weeklyReviewService.ts` | 改为调用 HTTP API |
-| `src/services/eventService.ts` | 改为调用 HTTP API |
-| `src/services/tagService.ts` | `getEmotionTags()` / `getReasonTags()` / `saveEmotionTags()` / `saveReasonTags()` 改为 HTTP API |
-| `src/services/tCalculatorService.ts` | 改为调用 HTTP API |
-| `src/services/aiService.ts` | `getAiConfig()` 改为 HTTP GET，其余不变 |
-| `src/App.tsx` | 启动时调用 `initApiKey()` 初始化 API Key |
-| `src/lib/apiClient.ts` | 新增，统一 HTTP 请求入口 |
+| `frontend/services/accountService.ts` | 改为调用 HTTP API |
+| `frontend/services/reviewService.ts` | 改为调用 HTTP API |
+| `frontend/services/weeklyReviewService.ts` | 改为调用 HTTP API |
+| `frontend/services/eventService.ts` | 改为调用 HTTP API |
+| `frontend/services/tagService.ts` | `getEmotionTags()` / `getReasonTags()` / `saveEmotionTags()` / `saveReasonTags()` 改为 HTTP API |
+| `frontend/services/tCalculatorService.ts` | 改为调用 HTTP API |
+| `frontend/services/aiService.ts` | `getAiConfig()` 改为 HTTP GET，其余不变 |
+| `frontend/App.tsx` | 启动时调用 `initApiKey()` 初始化 API Key |
+| `frontend/lib/apiClient.ts` | 新增，统一 HTTP 请求入口 |
 
-### API Client (`src/lib/apiClient.ts`)
+### API Client (`frontend/lib/apiClient.ts`)
 
 ```typescript
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -199,7 +199,7 @@ export const api = {
 };
 ```
 
-> 后端 `server/index.ts` 需额外配置静态文件serve：`.api-key` 文件通过 `express.static` 对外暴露为 `/api-key` 路径（如 `app.use(express.static('.', { dotfiles: 'allow' }))`），前端可通过 `/api-key` 读取内容。
+> 后端 `backend/index.ts` 需额外配置静态文件serve：`.api-key` 文件通过 `express.static` 对外暴露为 `/api-key` 路径（如 `app.use(express.static('.', { dotfiles: 'allow' }))`），前端可通过 `/api-key` 读取内容。
 
 ---
 
@@ -210,9 +210,9 @@ export const api = {
 ```json
 {
   "scripts": {
-    "dev:server": "tsx server/index.ts",
+    "dev:server": "tsx backend/index.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
-    "server": "tsx server/index.ts"
+    "server": "tsx backend/index.ts"
   }
 }
 ```
@@ -241,17 +241,19 @@ export default defineConfig({
 
 ### 环境变量
 
-**.env (后端)**
+**.env**
 ```
-PORT=3001
-REDIS_URL=redis://localhost:6379
-API_KEY=         # 不填则自动生成
-CORS_ORIGIN=http://localhost:5173
-```
-
-**.env (前端)**
-```
+# Frontend
 VITE_API_BASE_URL=/api/v1
+
+# Backend
+PORT=3001
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+API_KEY=
+CORS_ORIGIN=http://localhost:5173
 ```
 
 ---
@@ -287,7 +289,7 @@ VITE_API_BASE_URL=/api/v1
 
 - `stockService.ts` — EastMoney API 调用，无 localStorage 依赖
 - `batchService.ts` — 纯业务逻辑（计算 FIFO 等），无 localStorage 依赖
-- `src/components/dashboard/` — UI 组件不直接访问 localStorage，通过 service 层
+- `frontend/components/dashboard/` — UI 组件不直接访问 localStorage，通过 service 层
 
 ---
 
@@ -305,7 +307,7 @@ npm install -D @types/express @types/cors tsx
 #### Step 1.2 创建目录结构 ✅
 > 状态：已完成（2026-04-27）
 ```
-server/
+backend/
 ├── index.ts
 ├── routes/
 │   ├── accounts.ts
@@ -330,7 +332,7 @@ server/
     └── index.ts
 ```
 
-#### Step 1.3 创建 `server/services/redis.ts` — Redis 客户端 ✅
+#### Step 1.3 创建 `backend/services/redis.ts` — Redis 客户端 ✅
 > 状态：已完成（2026-04-27）
 ```typescript
 import Redis from 'ioredis';
@@ -342,7 +344,7 @@ redis.on('error', (err) => console.error('Redis error:', err));
 export default redis;
 ```
 
-#### Step 1.4 创建 `server/middleware/cors.ts` ✅
+#### Step 1.4 创建 `backend/middleware/cors.ts` ✅
 > 状态：已完成（2026-04-27）
 ```typescript
 import cors from 'cors';
@@ -355,7 +357,7 @@ export default cors({
 });
 ```
 
-#### Step 1.5 创建 `server/middleware/auth.ts` — API Key 验证 ✅
+#### Step 1.5 创建 `backend/middleware/auth.ts` — API Key 验证 ✅
 > 状态：已完成（2026-04-27）
 ```typescript
 import { Request, Response, NextFunction } from 'express';
@@ -376,11 +378,11 @@ export async function apiKeyAuth(req: Request, res: Response, next: NextFunction
 }
 ```
 
-#### Step 1.6 创建 `server/types/index.ts` — 从前端复制共享类型 ✅
+#### Step 1.6 创建 `backend/types/index.ts` — 从前端复制共享类型 ✅
 > 状态：已完成（2026-04-27）
-从 `src/types/index.ts`、`src/types/account.ts`、`src/types/review.ts`、`src/types/weeklyReview.ts` 复制所有 interface 到此文件，确保后端类型与前端一致。
+从 `frontend/types/index.ts`、`frontend/types/account.ts`、`frontend/types/review.ts`、`frontend/types/weeklyReview.ts` 复制所有 interface 到此文件，确保后端类型与前端一致。
 
-#### Step 1.7 创建 `server/services/accountService.ts` — 账户业务逻辑 ✅
+#### Step 1.7 创建 `backend/services/accountService.ts` — 账户业务逻辑 ✅
 > 状态：已完成（2026-04-27）
 ```typescript
 import redis from './redis';
@@ -407,7 +409,7 @@ export async function updateAccount(id: string, input: UpdateAccountInput): Prom
 export async function deleteAccount(id: string): Promise<void> { ... }
 ```
 
-#### Step 1.8 创建 `server/services/positionService.ts` — 持仓业务逻辑 ✅
+#### Step 1.8 创建 `backend/services/positionService.ts` — 持仓业务逻辑 ✅
 > 状态：已完成（2026-04-27） ✅
 > 状态：已完成（2026-04-27）
 ```typescript
@@ -432,7 +434,7 @@ export async function deletePosition(id: string): Promise<void> { ... }
 
 类似实现 `reviewService.ts`、`eventService.ts`、`tcalcService.ts`，分别对应 `turtletrace:reviews:daily`、`turtletrace:events`、`turtletrace:tcalc:*` 等 Redis key。
 
-#### Step 1.9 创建 `server/routes/accounts.ts` ✅
+#### Step 1.9 创建 `backend/routes/accounts.ts` ✅
 > 状态：已完成（2026-04-27）
 ```typescript
 import { Router } from 'express';
@@ -465,7 +467,7 @@ export default router;
 
 按相同模式创建：`routes/positions.ts`、`routes/reviews.ts`、`routes/weeklyReviews.ts`、`routes/events.ts`、`routes/tcalc.ts`、`routes/ai.ts`、`routes/settings.ts`。
 
-#### Step 1.10 创建 `server/index.ts` — 服务入口 ✅
+#### Step 1.10 创建 `backend/index.ts` — 服务入口 ✅
 > 状态：已完成（2026-04-27）
 ```typescript
 import 'dotenv/config';
@@ -525,9 +527,9 @@ initApiKey().then(() => {
 ```json
 {
   "scripts": {
-    "dev:server": "tsx server/index.ts",
+    "dev:server": "tsx backend/index.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
-    "server": "tsx server/index.ts"
+    "server": "tsx backend/index.ts"
   }
 }
 ```
@@ -552,7 +554,7 @@ export default defineConfig({
 })
 ```
 
-#### Step 2.2 创建 `src/lib/apiClient.ts` ✅
+#### Step 2.2 创建 `frontend/lib/apiClient.ts` ✅
 > 状态：已完成（2026-04-27）
 ```typescript
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
@@ -599,7 +601,7 @@ export const api = {
 export { initApiKey };
 ```
 
-#### Step 2.3 重构 `src/services/accountService.ts` ✅
+#### Step 2.3 重构 `frontend/services/accountService.ts` ✅
 > 状态：已完成（2026-04-27）
 将所有 `localStorage.getItem/setItem` 替换为 `api.get/post/put/delete` 调用：
 - `getAccounts()` → `api.get('/accounts')`
@@ -611,21 +613,21 @@ export { initApiKey };
 - `updatePosition(position)` → `api.put('/positions/' + position.id, position)`
 - `deletePosition(positionId)` → `api.delete('/positions/' + positionId)`
 
-#### Step 2.4 重构 `src/services/reviewService.ts` ✅
+#### Step 2.4 重构 `frontend/services/reviewService.ts` ✅
 > 状态：已完成（2026-04-27）
 - `getAllReviews()` → `api.get('/reviews/daily')`
 - `getReview(date)` → `api.get('/reviews/daily/' + date)`
 - `saveReview(review)` → `api.post('/reviews/daily', review)`
 - `deleteReview(date)` → `api.delete('/reviews/daily/' + date)`
 
-#### Step 2.5 重构 `src/services/weeklyReviewService.ts` ✅
+#### Step 2.5 重构 `frontend/services/weeklyReviewService.ts` ✅
 > 状态：已完成（2026-04-27）
 - `getAllReviews()` → `api.get('/reviews/weekly')`
 - `getReview(weekLabel)` → `api.get('/reviews/weekly/' + weekLabel)`
 - `saveReview(review)` → `api.post('/reviews/weekly', review)`
 - `deleteReview(weekLabel)` → `api.delete('/reviews/weekly/' + weekLabel)`
 
-#### Step 2.6 重构 `src/services/tCalculatorService.ts` ✅
+#### Step 2.6 重构 `frontend/services/tCalculatorService.ts` ✅
 > 状态：已完成（2026-04-27）
 - `getFeeConfig()` → `api.get('/tcalc/config')`
 - `saveFeeConfig(config)` → `api.put('/tcalc/config', config)`
@@ -636,25 +638,25 @@ export { initApiKey };
 - `getLastInput()` → `api.get('/tcalc/last-input')`
 - `saveLastInput(input)` → `api.post('/tcalc/last-input', input)`
 
-#### Step 2.7 重构 `src/services/eventService.ts` ✅
+#### Step 2.7 重构 `frontend/services/eventService.ts` ✅
 > 状态：已完成（2026-04-27）
 - `getAllEvents()` → `api.get('/events')`
 - `getEvent(id)` → `api.get('/events/' + id)`
 - `saveEvent(event)` → `event.id ? api.put('/events/' + event.id, event) : api.post('/events', event)`
 - `deleteEvent(id)` → `api.delete('/events/' + id)`
 
-#### Step 2.8 重构 `src/services/tagService.ts` ✅
+#### Step 2.8 重构 `frontend/services/tagService.ts` ✅
 > 状态：已完成（2026-04-27）
 - `getEmotionTags()` → `api.get('/tags/emotions')`
 - `saveEmotionTags(tags)` → `api.put('/tags/emotions', tags)`
 - `getReasonTags()` → `api.get('/tags/reasons')`
 - `saveReasonTags(tags)` → `api.put('/tags/reasons', tags)`
 
-#### Step 2.9 重构 `src/services/aiService.ts` ✅
+#### Step 2.9 重构 `frontend/services/aiService.ts` ✅
 > 状态：已完成（2026-04-27）
 `getAiConfig()` 从 localStorage 读取改为 `api.get('/ai/config')`，其余不变（外部 AI 调用不经过后端）。
 
-#### Step 2.10 修改 `src/App.tsx` 调用 `initApiKey` ✅
+#### Step 2.10 修改 `frontend/App.tsx` 调用 `initApiKey` ✅
 > 状态：已完成（2026-04-27）
 
 在 App 组件初始化时调用 `initApiKey()`，确保 API Key 在首次请求前已完成初始化：

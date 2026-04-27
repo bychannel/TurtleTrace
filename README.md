@@ -104,7 +104,7 @@ npm run preview
 
 ```
 TurtleTrace/
-├── src/
+├── frontend/
 │   ├── components/
 │   │   ├── ui/                          # shadcn/ui 基础组件
 │   │   └── dashboard/

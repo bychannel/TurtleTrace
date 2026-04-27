@@ -9,9 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:stock-db": "node scripts/build-stock-db.js",
-    "dev:server": "tsx server/index.ts",
+    "dev:server": "tsx backend/index.ts",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
-    "server": "tsx server/index.ts"
+    "server": "tsx backend/index.ts"
   },
   "dependencies": {
     "@types/html2canvas": "^0.5.35",

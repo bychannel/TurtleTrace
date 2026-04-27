@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { PositionManager } from './components/dashboard/PositionManager'
 import { ProfitDashboard } from './components/dashboard/ProfitDashboard'
 import { NewsFeed } from './components/dashboard/NewsFeed'
@@ -27,10 +27,6 @@ import { initApiKey } from './lib/apiClient'
 import { isWelcomeCompleted, markWelcomeCompleted } from './services/welcomeService'
 
 function App() {
-  // 用于记录上一次的持仓数据，避免重复保存
-  // 初始值为 null 表示还未初始化
-  const prevPositionsRef = useRef<string | null>(null)
-
   // 欢迎页状态
   const [showWelcome, setShowWelcome] = useState(true)  // 初始为 true，初始化时检查
 
@@ -162,16 +158,6 @@ function App() {
       setAllPositions([...otherAccountPositions, ...updatedPositions])
     }
   }, [currentAccountId, allPositions, accounts])
-
-    // 保存到后端（当 allPositions 变化时）
-  useEffect(() => {
-    // 持仓数据已通过 accountService 的 API 调用保存到后端
-    // 此处无需额外处理
-  }, [allPositions])('stock-positions', currentData)
-    } else {
-      localStorage.removeItem('stock-positions')
-    }
-  }, [allPositions])
 
   // 导入持仓处理
   const handleImportPositions = (importedPositions: Position[]) => {
