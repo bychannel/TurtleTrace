@@ -2,8 +2,7 @@
 
 import type { MarketEvent, EventFilter, RepeatRule } from '../types/event';
 import { format, addDays, addWeeks, addMonths, addYears, isBefore, isAfter, parseISO } from 'date-fns';
-
-const EVENTS_STORAGE_KEY = 'turtletrace_events';
+import { api } from '../lib/apiClient';
 
 /**
  * 消息事件服务
@@ -14,8 +13,7 @@ class EventService {
   /** 获取所有事件 */
   async getAllEvents(): Promise<MarketEvent[]> {
     try {
-      const data = localStorage.getItem(EVENTS_STORAGE_KEY);
-      return data ? JSON.parse(data) : [];
+      return await api.get<MarketEvent[]>('/events');
     } catch (error) {
       console.error('获取事件列表失败:', error);
       return [];
@@ -24,28 +22,21 @@ class EventService {
 
   /** 获取单个事件 */
   async getEvent(id: string): Promise<MarketEvent | null> {
-    const events = await this.getAllEvents();
-    return events.find(e => e.id === id) || null;
+    try {
+      return await api.get<MarketEvent>(`/events/${id}`);
+    } catch {
+      return null;
+    }
   }
 
   /** 保存事件 */
   async saveEvent(event: MarketEvent): Promise<boolean> {
     try {
-      const events = await this.getAllEvents();
-      const existingIndex = events.findIndex(e => e.id === event.id);
-
-      const updatedEvent = { ...event, updatedAt: Date.now() };
-
-      if (existingIndex >= 0) {
-        events[existingIndex] = updatedEvent;
+      if (event.id) {
+        await api.put(`/events/${event.id}`, event);
       } else {
-        events.push(updatedEvent);
+        await api.post('/events', event);
       }
-
-      // 按日期排序
-      events.sort((a, b) => a.date.localeCompare(b.date));
-
-      localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
       return true;
     } catch (error) {
       console.error('保存事件失败:', error);
@@ -56,9 +47,7 @@ class EventService {
   /** 删除事件 */
   async deleteEvent(id: string): Promise<boolean> {
     try {
-      const events = await this.getAllEvents();
-      const filtered = events.filter(e => e.id !== id && e.parentEventId !== id);
-      localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(filtered));
+      await api.delete(`/events/${id}`);
       return true;
     } catch (error) {
       console.error('删除事件失败:', error);
@@ -76,53 +65,40 @@ class EventService {
 
   /** 按日期范围获取事件 */
   async getEventsByRange(startDate: string, endDate: string): Promise<MarketEvent[]> {
-    const events = await this.getAllEvents();
-    return events.filter(e => e.date >= startDate && e.date <= endDate);
+    try {
+      return await api.get<MarketEvent[]>(`/events?startDate=${startDate}&endDate=${endDate}`);
+    } catch {
+      return [];
+    }
   }
 
   /** 按筛选条件获取事件 */
   async getEventsByFilter(filter: EventFilter): Promise<MarketEvent[]> {
-    let events = await this.getAllEvents();
-
-    if (filter.eventType && filter.eventType.length > 0) {
-      events = events.filter(e => filter.eventType!.includes(e.eventType));
-    }
-
-    if (filter.importance && filter.importance.length > 0) {
-      events = events.filter(e => filter.importance!.includes(e.importance));
-    }
-
-    if (filter.status && filter.status.length > 0) {
-      events = events.filter(e => filter.status!.includes(e.status));
-    }
-
-    if (filter.tags && filter.tags.length > 0) {
-      events = events.filter(e => filter.tags!.some(tag => e.tags.includes(tag)));
-    }
-
+    const params = new URLSearchParams();
+    if (filter.eventType?.length) params.append('eventType', filter.eventType.join(','));
+    if (filter.importance?.length) params.append('importance', filter.importance.join(','));
+    if (filter.status?.length) params.append('status', filter.status.join(','));
+    if (filter.tags?.length) params.append('tags', filter.tags.join(','));
     if (filter.dateRange) {
-      events = events.filter(e =>
-        e.date >= filter.dateRange!.start && e.date <= filter.dateRange!.end
-      );
+      params.append('startDate', filter.dateRange.start);
+      params.append('endDate', filter.dateRange.end);
     }
+    if (filter.search) params.append('search', filter.search);
 
-    if (filter.search) {
-      const searchLower = filter.search.toLowerCase();
-      events = events.filter(e =>
-        e.name.toLowerCase().includes(searchLower) ||
-        e.preAnalysis?.expectation?.toLowerCase().includes(searchLower) ||
-        e.postReview?.summary?.toLowerCase().includes(searchLower)
-      );
+    try {
+      return await api.get<MarketEvent[]>(`/events?${params.toString()}`);
+    } catch {
+      return [];
     }
-
-    return events;
   }
 
   /** 获取即将到来的事件 */
   async getUpcomingEvents(days: number = 7): Promise<MarketEvent[]> {
-    const today = format(new Date(), 'yyyy-MM-dd');
-    const futureDate = format(addDays(new Date(), days), 'yyyy-MM-dd');
-    return this.getEventsByRange(today, futureDate);
+    try {
+      return await api.get<MarketEvent[]>(`/events/upcoming/${days}`);
+    } catch {
+      return [];
+    }
   }
 
   // ==================== 重复事件处理 ====================
@@ -146,7 +122,6 @@ class EventService {
       dates.push(format(currentDate, 'yyyy-MM-dd'));
       count++;
 
-      // 根据重复类型计算下一个日期
       switch (rule.type) {
         case 'daily':
           currentDate = addDays(currentDate, rule.interval);
@@ -162,13 +137,11 @@ class EventService {
           break;
         case 'custom':
           if (rule.weekdays && rule.weekdays.length > 0) {
-            // 找下一个符合条件的周几
             currentDate = addDays(currentDate, 1);
             while (!rule.weekdays.includes(currentDate.getDay())) {
               currentDate = addDays(currentDate, 1);
             }
           } else if (rule.monthDay) {
-            // 每月固定几号
             currentDate = addMonths(currentDate, 1);
           }
           break;
@@ -186,8 +159,8 @@ class EventService {
   createEvent(data: Partial<MarketEvent>): MarketEvent {
     const now = Date.now();
     return {
-      ...data,  // 先 spread 传入的数据
-      id: `event_${now}_${Math.random().toString(36).substr(2, 9)}`,  // 后设置 id，确保唯一性
+      ...data,
+      id: `event_${now}_${Math.random().toString(36).substr(2, 9)}`,
       name: data.name || '',
       date: data.date || format(new Date(), 'yyyy-MM-dd'),
       eventType: data.eventType || 'fixed',
@@ -220,19 +193,13 @@ class EventService {
       const events = JSON.parse(jsonData);
       if (!Array.isArray(events)) return false;
 
-      const existingEvents = await this.getAllEvents();
-      const merged = [...existingEvents];
-
       for (const event of events) {
-        const index = merged.findIndex(e => e.id === event.id);
-        if (index >= 0) {
-          merged[index] = event;
+        if (event.id) {
+          await api.put(`/events/${event.id}`, event);
         } else {
-          merged.push(event);
+          await api.post('/events', event);
         }
       }
-
-      localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(merged));
       return true;
     } catch (error) {
       console.error('导入事件失败:', error);

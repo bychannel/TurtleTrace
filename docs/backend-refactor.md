@@ -636,7 +636,8 @@ export { initApiKey };
 - `getLastInput()` → `api.get('/tcalc/last-input')`
 - `saveLastInput(input)` → `api.post('/tcalc/last-input', input)`
 
-#### Step 2.7 重构 `src/services/eventService.ts`
+#### Step 2.7 重构 `src/services/eventService.ts` ✅
+> 状态：已完成（2026-04-27）
 - `getAllEvents()` → `api.get('/events')`
 - `getEvent(id)` → `api.get('/events/' + id)`
 - `saveEvent(event)` → `event.id ? api.put('/events/' + event.id, event) : api.post('/events', event)`
