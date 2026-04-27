@@ -24,7 +24,7 @@ import {
   getAccountStats,
 } from './services/accountService'
 import { initApiKey } from './lib/apiClient'
-import { isWelcomeCompleted } from './services/welcomeService'
+import { isWelcomeCompleted, markWelcomeCompleted } from './services/welcomeService'
 
 function App() {
   // 用于记录上一次的持仓数据，避免重复保存
@@ -32,7 +32,7 @@ function App() {
   const prevPositionsRef = useRef<string | null>(null)
 
   // 欢迎页状态
-  const [showWelcome, setShowWelcome] = useState(!isWelcomeCompleted())
+  const [showWelcome, setShowWelcome] = useState(true)  // 初始为 true，初始化时检查
 
   // 持仓数据
   const [positions, setPositions] = useState<Position[]>([])
@@ -59,6 +59,11 @@ function App() {
   useEffect(() => {
     // 初始化 API Key
     initApiKey()
+
+    // 检查 welcome 状态
+    isWelcomeCompleted().then(completed => {
+      setShowWelcome(!completed)
+    })
 
     initializeAccountSystem().then(({ migrated }) => {
       if (migrated) {
@@ -158,31 +163,11 @@ function App() {
     }
   }, [currentAccountId, allPositions, accounts])
 
-  // 保存到 localStorage（当 allPositions 变化时）
+    // 保存到后端（当 allPositions 变化时）
   useEffect(() => {
-    const currentData = JSON.stringify(allPositions)
-
-    // 场景1：还未初始化（prevPositionsRef 为 null）
-    if (prevPositionsRef.current === null) {
-      // 如果当前数据不为空，说明是初始化后的首次有效数据
-      if (allPositions.length > 0) {
-        prevPositionsRef.current = currentData
-        localStorage.setItem('stock-positions', currentData)
-      }
-      // 如果数据为空，跳过（初始化时状态可能还是空的）
-      return
-    }
-
-    // 场景2：数据没有变化，跳过保存
-    if (currentData === prevPositionsRef.current) {
-      return
-    }
-
-    // 场景3：执行保存
-    prevPositionsRef.current = currentData
-
-    if (allPositions.length > 0) {
-      localStorage.setItem('stock-positions', currentData)
+    // 持仓数据已通过 accountService 的 API 调用保存到后端
+    // 此处无需额外处理
+  }, [allPositions])('stock-positions', currentData)
     } else {
       localStorage.removeItem('stock-positions')
     }
@@ -218,13 +203,14 @@ function App() {
   ]
 
   // 欢迎页完成处理
-  const handleWelcomeComplete = useCallback(() => {
+  const handleWelcomeComplete = useCallback(async () => {
+    await markWelcomeCompleted()
     setShowWelcome(false)
     // 重新加载账户和持仓数据
-    setAccounts(getAccounts())
-    const lastActive = getLastActiveAccount()
+    setAccounts(await getAccounts())
+    const lastActive = await getLastActiveAccount()
     setCurrentAccountId(lastActive.id)
-    setAllPositions(getPositions())
+    setAllPositions(await getPositions())
   }, [])
 
   // 显示欢迎页
