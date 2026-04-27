@@ -654,7 +654,8 @@ export { initApiKey };
 > 状态：已完成（2026-04-27）
 `getAiConfig()` 从 localStorage 读取改为 `api.get('/ai/config')`，其余不变（外部 AI 调用不经过后端）。
 
-#### Step 2.10 修改 `src/App.tsx` 调用 `initApiKey`
+#### Step 2.10 修改 `src/App.tsx` 调用 `initApiKey` ✅
+> 状态：已完成（2026-04-27）
 
 在 App 组件初始化时调用 `initApiKey()`，确保 API Key 在首次请求前已完成初始化：
 ```typescript

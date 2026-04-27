@@ -23,6 +23,7 @@ import {
   initializeAccountSystem,
   getAccountStats,
 } from './services/accountService'
+import { initApiKey } from './lib/apiClient'
 import { isWelcomeCompleted } from './services/welcomeService'
 
 function App() {
@@ -56,25 +57,29 @@ function App() {
 
   // 初始化账户系统和数据迁移
   useEffect(() => {
-    const { migrated } = initializeAccountSystem()
-    if (migrated) {
-      console.log('Data migrated to multi-account structure')
-    }
+    // 初始化 API Key
+    initApiKey()
+
+    initializeAccountSystem().then(({ migrated }) => {
+      if (migrated) {
+        console.log('Data migrated to multi-account structure')
+      }
+    })
 
     // 加载账户
-    const loadedAccounts = getAccounts()
-    setAccounts(loadedAccounts)
+    getAccounts().then(loadedAccounts => {
+      setAccounts(loadedAccounts)
+    })
 
     // 获取最后活跃账户
-    const lastActive = getLastActiveAccount()
-    setCurrentAccountId(lastActive.id)
+    getLastActiveAccount().then(lastActive => {
+      setCurrentAccountId(lastActive.id)
+    })
 
     // 加载持仓
-    const loadedPositions = getPositions()
-    setAllPositions(loadedPositions)
-
-    // 注意：不在这里设置 prevPositionsRef
-    // 让保存 useEffect 在首次有效数据时自动初始化
+    getPositions().then(loadedPositions => {
+      setAllPositions(loadedPositions)
+    })
   }, [])
 
   // 根据当前账户筛选持仓
@@ -111,7 +116,7 @@ function App() {
       setLastActiveAccount(accountId)
     }
     // 重新加载账户列表（可能账户信息有变化）
-    setAccounts(getAccounts())
+    getAccounts().then(setAccounts)
   }, [])
 
   // 打开账户管理
@@ -121,8 +126,8 @@ function App() {
 
   // 账户变化后刷新数据
   const handleAccountChangeRefresh = useCallback(() => {
-    setAccounts(getAccounts())
-    setAllPositions(getPositions())
+    getAccounts().then(setAccounts)
+    getPositions().then(setAllPositions)
   }, [])
 
   // 持仓变化处理
