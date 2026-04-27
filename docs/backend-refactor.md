@@ -330,7 +330,8 @@ server/
     └── index.ts
 ```
 
-#### Step 1.3 创建 `server/services/redis.ts` — Redis 客户端
+#### Step 1.3 创建 `server/services/redis.ts` — Redis 客户端 ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 import Redis from 'ioredis';
 import 'dotenv/config';
