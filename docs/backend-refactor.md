@@ -599,7 +599,8 @@ export const api = {
 export { initApiKey };
 ```
 
-#### Step 2.3 重构 `src/services/accountService.ts`
+#### Step 2.3 重构 `src/services/accountService.ts` ✅
+> 状态：已完成（2026-04-27）
 将所有 `localStorage.getItem/setItem` 替换为 `api.get/post/put/delete` 调用：
 - `getAccounts()` → `api.get('/accounts')`
 - `createAccount(input)` → `api.post('/accounts', input)`
