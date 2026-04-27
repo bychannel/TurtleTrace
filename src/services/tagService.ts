@@ -1,7 +1,5 @@
 import type { EmotionTag, ReasonTag } from '../types'
-
-const EMOTION_TAGS_KEY = 'stock-emotion-tags'
-const REASON_TAGS_KEY = 'stock-reason-tags'
+import { api } from '../lib/apiClient'
 
 // 默认情绪标签
 const DEFAULT_EMOTION_TAGS: EmotionTag[] = [
@@ -49,78 +47,72 @@ const COLOR_OPTIONS = [
 ]
 
 // 获取情绪标签
-export function getEmotionTags(): EmotionTag[] {
-  const saved = localStorage.getItem(EMOTION_TAGS_KEY)
-  if (saved) {
-    try {
-      return JSON.parse(saved)
-    } catch (e) {
-      console.error('Failed to load emotion tags:', e)
-    }
+export async function getEmotionTags(): Promise<EmotionTag[]> {
+  try {
+    const data = await api.get<EmotionTag[]>('/tags/emotions');
+    return data.length > 0 ? data : DEFAULT_EMOTION_TAGS;
+  } catch {
+    return DEFAULT_EMOTION_TAGS;
   }
-  return DEFAULT_EMOTION_TAGS
 }
 
 // 保存情绪标签
-export function saveEmotionTags(tags: EmotionTag[]): void {
-  localStorage.setItem(EMOTION_TAGS_KEY, JSON.stringify(tags))
+export async function saveEmotionTags(tags: EmotionTag[]): Promise<void> {
+  await api.put('/tags/emotions', tags);
 }
 
 // 添加情绪标签
-export function addEmotionTag(name: string): EmotionTag {
-  const tags = getEmotionTags()
+export async function addEmotionTag(name: string): Promise<EmotionTag> {
+  const tags = await getEmotionTags();
   const newTag: EmotionTag = {
     id: Date.now().toString(),
     name,
     color: COLOR_OPTIONS[tags.length % COLOR_OPTIONS.length],
   }
-  saveEmotionTags([...tags, newTag])
-  return newTag
+  await saveEmotionTags([...tags, newTag]);
+  return newTag;
 }
 
 // 删除情绪标签
-export function deleteEmotionTag(id: string): void {
-  const tags = getEmotionTags().filter(t => t.id !== id)
-  saveEmotionTags(tags)
+export async function deleteEmotionTag(id: string): Promise<void> {
+  const tags = (await getEmotionTags()).filter(t => t.id !== id);
+  await saveEmotionTags(tags);
 }
 
 // 获取交易原因标签
-export function getReasonTags(): ReasonTag[] {
-  const saved = localStorage.getItem(REASON_TAGS_KEY)
-  if (saved) {
-    try {
-      return JSON.parse(saved)
-    } catch (e) {
-      console.error('Failed to load reason tags:', e)
-    }
+export async function getReasonTags(): Promise<ReasonTag[]> {
+  try {
+    const data = await api.get<ReasonTag[]>('/tags/reasons');
+    return data.length > 0 ? data : DEFAULT_REASON_TAGS;
+  } catch {
+    return DEFAULT_REASON_TAGS;
   }
-  return DEFAULT_REASON_TAGS
 }
 
 // 保存交易原因标签
-export function saveReasonTags(tags: ReasonTag[]): void {
-  localStorage.setItem(REASON_TAGS_KEY, JSON.stringify(tags))
+export async function saveReasonTags(tags: ReasonTag[]): Promise<void> {
+  await api.put('/tags/reasons', tags);
 }
 
 // 添加交易原因标签
-export function addReasonTag(name: string): ReasonTag {
-  const tags = getReasonTags()
+export async function addReasonTag(name: string): Promise<ReasonTag> {
+  const tags = await getReasonTags();
   const newTag: ReasonTag = {
     id: Date.now().toString(),
     name,
     color: COLOR_OPTIONS[tags.length % COLOR_OPTIONS.length],
   }
-  saveReasonTags([...tags, newTag])
-  return newTag
+  await saveReasonTags([...tags, newTag]);
+  return newTag;
 }
 
 // 删除交易原因标签
-export function deleteReasonTag(id: string): void {
-  const tags = getReasonTags().filter(t => t.id !== id)
-  saveReasonTags(tags)
+export async function deleteReasonTag(id: string): Promise<void> {
+  const tags = (await getReasonTags()).filter(t => t.id !== id);
+  await saveReasonTags(tags);
 }
 
 // 获取所有颜色选项
 export function getColorOptions(): string[] {
-  return COLOR_OPTIONS
+  return COLOR_OPTIONS;
 }

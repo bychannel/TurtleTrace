@@ -9,6 +9,7 @@ import reviewsRouter from './routes/reviews';
 import weeklyReviewsRouter from './routes/weeklyReviews';
 import eventsRouter from './routes/events';
 import tcalcRouter from './routes/tcalc';
+import tagsRouter from './routes/tags';
 import aiRouter from './routes/ai';
 import settingsRouter from './routes/settings';
 
@@ -45,6 +46,7 @@ app.use('/api/v1/reviews/daily', reviewsRouter);
 app.use('/api/v1/reviews/weekly', weeklyReviewsRouter);
 app.use('/api/v1/events', eventsRouter);
 app.use('/api/v1/tcalc', tcalcRouter);
+app.use('/api/v1/tags', tagsRouter);
 app.use('/api/v1/ai', aiRouter);
 app.use('/api/v1/settings', settingsRouter);
 

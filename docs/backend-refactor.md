@@ -643,7 +643,8 @@ export { initApiKey };
 - `saveEvent(event)` → `event.id ? api.put('/events/' + event.id, event) : api.post('/events', event)`
 - `deleteEvent(id)` → `api.delete('/events/' + id)`
 
-#### Step 2.8 重构 `src/services/tagService.ts`
+#### Step 2.8 重构 `src/services/tagService.ts` ✅
+> 状态：已完成（2026-04-27）
 - `getEmotionTags()` → `api.get('/tags/emotions')`
 - `saveEmotionTags(tags)` → `api.put('/tags/emotions', tags)`
 - `getReasonTags()` → `api.get('/tags/reasons')`
