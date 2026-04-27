@@ -520,7 +520,8 @@ initApiKey().then(() => {
 #### Step 1.11 更新 `.gitignore` 追加 `.api-key` ✅
 > 状态：已完成（2026-04-27）
 
-#### Step 1.12 更新 `package.json` scripts
+#### Step 1.12 更新 `package.json` scripts ✅
+> 状态：已完成（2026-04-27）
 ```json
 {
   "scripts": {
