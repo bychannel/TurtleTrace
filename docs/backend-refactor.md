@@ -295,11 +295,12 @@ VITE_API_BASE_URL=/api/v1
 
 ### Phase 1: 后端骨架
 
-#### Step 1.1 安装依赖
+#### Step 1.1 安装依赖 ✅
 ```bash
 npm install express cors ioredis dotenv concurrently
 npm install -D @types/express @types/cors tsx
 ```
+> 状态：已完成（2026-04-27）
 
 #### Step 1.2 创建目录结构
 ```
