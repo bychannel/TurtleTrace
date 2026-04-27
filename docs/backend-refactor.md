@@ -536,7 +536,8 @@ initApiKey().then(() => {
 
 ### Phase 2: 前端适配
 
-#### Step 2.1 更新 `vite.config.ts` 添加 proxy
+#### Step 2.1 更新 `vite.config.ts` 添加 proxy ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 export default defineConfig({
   plugins: [react()],
