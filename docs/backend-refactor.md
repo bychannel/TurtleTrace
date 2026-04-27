@@ -552,7 +552,8 @@ export default defineConfig({
 })
 ```
 
-#### Step 2.2 创建 `src/lib/apiClient.ts`
+#### Step 2.2 创建 `src/lib/apiClient.ts` ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
