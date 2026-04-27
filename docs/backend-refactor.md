@@ -302,7 +302,8 @@ npm install -D @types/express @types/cors tsx
 ```
 > 状态：已完成（2026-04-27）
 
-#### Step 1.2 创建目录结构
+#### Step 1.2 创建目录结构 ✅
+> 状态：已完成（2026-04-27）
 ```
 server/
 ├── index.ts
