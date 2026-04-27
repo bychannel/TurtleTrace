@@ -432,7 +432,8 @@ export async function deletePosition(id: string): Promise<void> { ... }
 
 类似实现 `reviewService.ts`、`eventService.ts`、`tcalcService.ts`，分别对应 `turtletrace:reviews:daily`、`turtletrace:events`、`turtletrace:tcalc:*` 等 Redis key。
 
-#### Step 1.9 创建 `server/routes/accounts.ts`
+#### Step 1.9 创建 `server/routes/accounts.ts` ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 import { Router } from 'express';
 import { apiKeyAuth } from '../middleware/auth';
