@@ -342,7 +342,8 @@ redis.on('error', (err) => console.error('Redis error:', err));
 export default redis;
 ```
 
-#### Step 1.4 创建 `server/middleware/cors.ts`
+#### Step 1.4 创建 `server/middleware/cors.ts` ✅
+> 状态：已完成（2026-04-27）
 ```typescript
 import cors from 'cors';
 import 'dotenv/config';
