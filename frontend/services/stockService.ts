@@ -52,7 +52,12 @@ export async function getStockQuote(symbol: string): Promise<StockQuote | null> 
       return null
     }
 
-    const { f43: price, f44: high, f45: low, f46: open, f58: name, f60: prevClose } = result.data
+    const price = Number(result.data.f43) || 0
+    const high = Number(result.data.f44) || 0
+    const low = Number(result.data.f45) || 0
+    const open = Number(result.data.f46) || 0
+    const name = result.data.f58 || ''
+    const prevClose = Number(result.data.f60) || 0
 
     // 计算涨跌幅
     const change = prevClose ? price - prevClose : 0

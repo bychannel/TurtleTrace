@@ -4,6 +4,7 @@ import { InputPanel } from './InputPanel'
 import { ResultPanel } from './ResultPanel'
 import { HistoryList } from './HistoryList'
 import type { TCalcInput, TCalcResult, FeeConfig, TCalcRecord } from '../../../types/tCalculator'
+import { DEFAULT_FEE_CONFIG } from '../../../types/tCalculator'
 import {
   calculateTProfit,
   getFeeConfig,
@@ -23,7 +24,7 @@ interface TCalculatorProps {
 
 export function TCalculator({ open, onOpenChange }: TCalculatorProps) {
   const [input, setInput] = useState<TCalcInput>({ buyPrice: 0, sellPrice: 0, quantity: 0 })
-  const [feeConfig, setFeeConfig] = useState<FeeConfig>(getFeeConfig)
+  const [feeConfig, setFeeConfig] = useState<FeeConfig>(DEFAULT_FEE_CONFIG)
   const [result, setResult] = useState<TCalcResult | null>(null)
   const [history, setHistory] = useState<TCalcRecord[]>([])
 

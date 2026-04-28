@@ -11,7 +11,7 @@ import { LineChart, TrendingUp, Newspaper, Database, BookOpen, Menu, X, Wallet, 
 import { TCalculatorTrigger } from './components/dashboard/TCalculator'
 import { WelcomeWizard } from './components/welcome'
 import type { Position, ProfitSummary } from './types'
-import type { Account } from './types/account'
+import type { Account, AccountStats } from './types/account'
 import { calculateProfitSummary, calculateClearedProfit } from './utils/calculations'
 import { formatCurrency, formatPercent } from './lib/utils'
 import TurtleTraceLogo from './assets/TurtleTraceLogo.png'
@@ -171,12 +171,35 @@ function App() {
   }
 
   // 获取当前显示的持仓市值
-  const displayStats = currentAccountId
-    ? getAccountStats(currentAccountId, positions)
-    : {
-        totalProfit: summary.totalProfit,
-        profitRate: summary.totalProfitPercent,
+  // displayStats 可以是 AccountStats（API返回）或 ProfitSummary（本地计算）
+  const [displayStats, setDisplayStats] = useState<AccountStats | ProfitSummary>({
+    totalProfit: 0,
+    profitRate: 0,
+    totalCost: 0,
+    totalValue: 0,
+  })
+
+  // 更新显示统计
+  useEffect(() => {
+    async function loadStats() {
+      if (currentAccountId) {
+        try {
+          const stats = await getAccountStats(currentAccountId)
+          setDisplayStats(stats)
+        } catch (e) {
+          console.error('Failed to load account stats:', e)
+        }
+      } else {
+        setDisplayStats({
+          totalProfit: summary.totalProfit,
+          profitRate: summary.totalProfitPercent,
+          totalCost: summary.totalCost,
+          totalValue: summary.totalValue,
+        })
       }
+    }
+    loadStats()
+  }, [currentAccountId, summary])
 
   const tabs = [
     { id: 'overview' as const, label: '总览', icon: LineChart },

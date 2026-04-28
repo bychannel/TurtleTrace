@@ -54,20 +54,20 @@ export function HistoryList({ records, onDelete, onClear, onSelect }: HistoryLis
                 </tr>
               </thead>
               <tbody>
-                {records.map((record) => (
+                {records.map((record, index) => (
                   <tr
-                    key={record.id}
+                    key={record.id ?? `record-${index}`}
                     className="border-b border-dashed hover:bg-surface-hover cursor-pointer"
                     onClick={() => onSelect(record)}
                   >
-                    <td className="py-2 font-mono">{record.buyPrice.toFixed(2)}</td>
-                    <td className="py-2 font-mono">{record.sellPrice.toFixed(2)}</td>
-                    <td className="py-2 font-mono text-right">{record.quantity}</td>
-                    <td className={`py-2 font-mono text-right ${record.result.netProfit >= 0 ? 'text-up' : 'text-down'}`}>
-                      {record.result.netProfit >= 0 ? '+' : ''}{formatCurrency(record.result.netProfit)}
+                    <td className="py-2 font-mono">{(record.buyPrice ?? 0).toFixed(2)}</td>
+                    <td className="py-2 font-mono">{(record.sellPrice ?? 0).toFixed(2)}</td>
+                    <td className="py-2 font-mono text-right">{record.quantity ?? 0}</td>
+                    <td className={`py-2 font-mono text-right ${(record.result?.netProfit ?? 0) >= 0 ? 'text-up' : 'text-down'}`}>
+                      {(record.result?.netProfit ?? 0) >= 0 ? '+' : ''}{formatCurrency(record.result?.netProfit ?? 0)}
                     </td>
-                    <td className={`py-2 font-mono text-right ${record.result.profitRate >= 0 ? 'text-up' : 'text-down'}`}>
-                      {formatPercent(record.result.profitRate)}
+                    <td className={`py-2 font-mono text-right ${(record.result?.profitRate ?? 0) >= 0 ? 'text-up' : 'text-down'}`}>
+                      {formatPercent(record.result?.profitRate ?? 0)}
                     </td>
                     <td className="py-2 text-xs text-muted-foreground text-right">
                       {formatDate(record.createdAt)}

@@ -14,6 +14,7 @@ class WeeklyReviewService {
     try {
       return await api.get<WeeklyReview>(`/reviews/weekly/${weekLabel}`);
     } catch (error) {
+      if (error instanceof Error && error.message === 'API error: 404') return null;
       console.error('获取周复盘失败:', error);
       return null;
     }

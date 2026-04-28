@@ -13,6 +13,7 @@ class ReviewService {
     try {
       return await api.get<DailyReview>(`/reviews/daily/${date}`);
     } catch (error) {
+      if (error instanceof Error && error.message === 'API error: 404') return null;
       console.error('获取复盘失败:', error);
       return null;
     }
