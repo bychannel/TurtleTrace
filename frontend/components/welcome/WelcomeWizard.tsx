@@ -33,10 +33,10 @@ export function WelcomeWizard({ onComplete }: WelcomeWizardProps) {
     setAccountName(name)
   }
 
-  const handleFinalComplete = () => {
+  const handleFinalComplete = async () => {
     // 创建账户
     try {
-      const account = createAccount({
+      const account = await createAccount({
         name: accountName,
         type: 'broker',
         isDefault: true,
@@ -48,7 +48,7 @@ export function WelcomeWizard({ onComplete }: WelcomeWizardProps) {
     }
 
     // 标记欢迎流程完成
-    markWelcomeCompleted()
+    await markWelcomeCompleted()
 
     // 通知父组件
     onComplete()

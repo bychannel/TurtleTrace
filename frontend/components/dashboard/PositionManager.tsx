@@ -26,6 +26,7 @@ import type {
   TransactionType,
   EmotionTag,
   ReasonTag,
+  Account,
 } from '../../types'
 import { getStockQuote } from '../../services/stockService'
 import { searchStocks, getPopularStocks, type SearchResult } from '../../services/stockDatabase'
@@ -38,7 +39,6 @@ import {
   deleteReasonTag,
 } from '../../services/tagService'
 import { formatCurrency, formatPercent } from '../../lib/utils'
-import { getDefaultAccount } from '../../services/accountService'
 import {
   isBatchMode,
   createBatch,
@@ -56,6 +56,7 @@ interface PositionManagerProps {
   positions: Position[]
   onPositionsChange: (positions: Position[]) => void
   currentAccountId?: string | null  // 当前账户ID，null 表示全部账户
+  accounts?: Account[]  // 账户列表，用于确定默认账户
 }
 
 // 计算最新成本价
@@ -72,6 +73,7 @@ export function PositionManager({
   positions,
   onPositionsChange,
   currentAccountId,
+  accounts = [],
 }: PositionManagerProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [symbol, setSymbol] = useState('')
@@ -217,7 +219,7 @@ export function PositionManager({
     }
 
     // 获取实际账户ID（全部账户视图时使用默认账户）
-    const actualAccountId = currentAccountId || getDefaultAccount().id
+    const actualAccountId = currentAccountId || (accounts.find(a => a.isDefault)?.id ?? accounts[0]?.id)
 
     const newPosition: Position = {
       id: `${symbol}-${Date.now()}`,
@@ -424,14 +426,14 @@ export function PositionManager({
   }
 
   // 添加新标签
-  const handleAddTag = () => {
+  const handleAddTag = async () => {
     if (!newTagName.trim()) return
 
     if (tagManagerDialog.type === 'emotion') {
-      const newTag = addEmotionTag(newTagName.trim())
+      const newTag = await addEmotionTag(newTagName.trim())
       setEmotionTags([...emotionTags, newTag])
     } else {
-      const newTag = addReasonTag(newTagName.trim())
+      const newTag = await addReasonTag(newTagName.trim())
       setReasonTags([...reasonTags, newTag])
     }
 

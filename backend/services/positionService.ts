@@ -34,11 +34,15 @@ export async function updatePosition(id: string, updates: Partial<Position>): Pr
   return positions[index];
 }
 
+export async function saveAllPositions(positions: Position[]): Promise<void> {
+  await redis.set(POSITIONS_KEY, JSON.stringify(positions));
+}
+
 export async function deletePosition(id: string): Promise<void> {
   const positions = await getPositions();
   const index = positions.findIndex(p => p.id === id);
   if (index === -1) throw new Error('Position not found');
 
   positions.splice(index, 1);
-  await savePositions(positions);
+  await saveAllPositions(positions);
 }

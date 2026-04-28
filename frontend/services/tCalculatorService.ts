@@ -2,8 +2,6 @@ import type { FeeConfig, TCalcInput, TCalcResult, TCalcRecord } from '../types/t
 import { DEFAULT_FEE_CONFIG } from '../types/tCalculator'
 import { api } from '../lib/apiClient'
 
-const MAX_HISTORY_RECORDS = 20
-
 /**
  * 计算做T收益
  */

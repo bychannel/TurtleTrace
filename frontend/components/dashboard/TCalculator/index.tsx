@@ -7,7 +7,6 @@ import type { TCalcInput, TCalcResult, FeeConfig, TCalcRecord } from '../../../t
 import { DEFAULT_FEE_CONFIG } from '../../../types/tCalculator'
 import {
   calculateTProfit,
-  getFeeConfig,
   saveFeeConfig,
   getLastInput,
   saveLastInput,
@@ -31,20 +30,21 @@ export function TCalculator({ open, onOpenChange }: TCalculatorProps) {
   // 初始化：加载上次输入和历史记录
   useEffect(() => {
     if (open) {
-      const lastInput = getLastInput()
-      if (lastInput) {
-        setInput(lastInput)
-        // 自动计算
-        if (lastInput.buyPrice > 0 && lastInput.sellPrice > 0 && lastInput.quantity > 0) {
-          const calcResult = calculateTProfit(lastInput, feeConfig)
-          setResult(calcResult)
+      getLastInput().then(lastInput => {
+        if (lastInput) {
+          setInput(lastInput)
+          // 自动计算
+          if (lastInput.buyPrice > 0 && lastInput.sellPrice > 0 && lastInput.quantity > 0) {
+            const calcResult = calculateTProfit(lastInput, feeConfig)
+            setResult(calcResult)
+          }
         }
-      }
+      })
       getHistory().then(setHistory)
     }
   }, [open, feeConfig])
 
-  const handleCalculate = useCallback(() => {
+  const handleCalculate = useCallback(async () => {
     if (input.buyPrice > 0 && input.sellPrice > 0 && input.quantity > 0) {
       const calcResult = calculateTProfit(input, feeConfig)
       setResult(calcResult)
@@ -53,7 +53,7 @@ export function TCalculator({ open, onOpenChange }: TCalculatorProps) {
       saveLastInput(input)
 
       // 添加到历史记录
-      const record = addHistoryRecord({
+      const record = await addHistoryRecord({
         buyPrice: input.buyPrice,
         sellPrice: input.sellPrice,
         quantity: input.quantity,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { PositionManager } from './components/dashboard/PositionManager'
 import { ProfitDashboard } from './components/dashboard/ProfitDashboard'
 import { NewsFeed } from './components/dashboard/NewsFeed'
@@ -10,8 +10,8 @@ import { AccountManager } from './components/dashboard/AccountManager'
 import { LineChart, TrendingUp, Newspaper, Database, BookOpen, Menu, X, Wallet, ChevronRight, Building2, CalendarDays } from 'lucide-react'
 import { TCalculatorTrigger } from './components/dashboard/TCalculator'
 import { WelcomeWizard } from './components/welcome'
-import type { Position, ProfitSummary } from './types'
-import type { Account, AccountStats } from './types/account'
+import type { Position } from './types'
+import type { Account } from './types/account'
 import { calculateProfitSummary, calculateClearedProfit } from './utils/calculations'
 import { formatCurrency, formatPercent } from './lib/utils'
 import TurtleTraceLogo from './assets/TurtleTraceLogo.png'
@@ -20,8 +20,8 @@ import {
   getLastActiveAccount,
   setLastActiveAccount,
   getPositions,
+  savePositions,
   initializeAccountSystem,
-  getAccountStats,
 } from './services/accountService'
 import { initApiKey } from './lib/apiClient'
 import { isWelcomeCompleted, markWelcomeCompleted } from './services/welcomeService'
@@ -31,7 +31,6 @@ function App() {
   const [showWelcome, setShowWelcome] = useState(true)  // 初始为 true，初始化时检查
 
   // 持仓数据
-  const [positions, setPositions] = useState<Position[]>([])
   const [allPositions, setAllPositions] = useState<Position[]>([])  // 所有持仓（未筛选）
 
   // 账户相关状态
@@ -42,13 +41,6 @@ function App() {
   const [showClearedPositionsInOverview, setShowClearedPositionsInOverview] = useState(false)
   const [showClearedProfitCard, setShowClearedProfitCard] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [summary, setSummary] = useState<ProfitSummary>({
-    totalCost: 0,
-    totalValue: 0,
-    totalProfit: 0,
-    totalProfitPercent: 0,
-    positions: [],
-  })
   const [activeTab, setActiveTab] = useState<'overview' | 'positions' | 'news' | 'data' | 'review' | 'calendar' | 'accounts'>('overview')
 
   // 初始化账户系统和数据迁移
@@ -83,32 +75,29 @@ function App() {
     })
   }, [])
 
-  // 根据当前账户筛选持仓
-  useEffect(() => {
+  // 根据当前账户筛选持仓（使用 useMemo 避免 effect 中 setState）
+  const filteredPositions = useMemo(() => {
     if (currentAccountId === null) {
-      // 全部账户
-      setPositions(allPositions)
-    } else {
-      // 指定账户
-      setPositions(allPositions.filter(p => p.accountId === currentAccountId))
+      return allPositions
     }
+    return allPositions.filter(p => p.accountId === currentAccountId)
   }, [currentAccountId, allPositions])
 
-  // 计算收益汇总
-  useEffect(() => {
-    const filteredPositions = showClearedPositionsInOverview
-      ? positions
-      : positions.filter(p => p.quantity > 0)
-    const newSummary = calculateProfitSummary(filteredPositions)
+  // 计算收益汇总（使用 useMemo 避免 effect 中 setState）
+  const calculatedSummary = useMemo(() => {
+    const positionsToUse = showClearedPositionsInOverview
+      ? filteredPositions
+      : filteredPositions.filter(p => p.quantity > 0)
+    const newSummary = calculateProfitSummary(positionsToUse)
 
     // 计算清仓股票收益
-    const clearedProfit = calculateClearedProfit(positions) ?? undefined
+    const clearedProfit = calculateClearedProfit(filteredPositions) ?? undefined
 
-    setSummary({
+    return {
       ...newSummary,
       clearedProfit,
-    })
-  }, [positions, showClearedPositionsInOverview])
+    }
+  }, [filteredPositions, showClearedPositionsInOverview])
 
   // 处理账户切换
   const handleAccountChange = useCallback((accountId: string | null) => {
@@ -136,6 +125,8 @@ function App() {
     // 获取当前操作的账户ID（全部账户视图时使用默认账户）
     const targetAccountId = currentAccountId || accounts.find(a => a.isDefault)?.id
 
+    let mergedPositions: Position[]
+
     if (currentAccountId === null) {
       // 全部账户视图：需要智能合并
       // 1. 保留所有不属于目标账户的持仓
@@ -147,7 +138,7 @@ function App() {
         ...p,
         accountId: targetAccountId || p.accountId,
       }))
-      setAllPositions([...otherAccountPositions, ...updatedPositions])
+      mergedPositions = [...otherAccountPositions, ...updatedPositions]
     } else {
       // 指定账户视图：合并其他账户的数据
       const otherAccountPositions = allPositions.filter(p => p.accountId !== currentAccountId)
@@ -155,8 +146,14 @@ function App() {
         ...p,
         accountId: currentAccountId,
       }))
-      setAllPositions([...otherAccountPositions, ...updatedPositions])
+      mergedPositions = [...otherAccountPositions, ...updatedPositions]
     }
+
+    setAllPositions(mergedPositions)
+    // 同步到后端 Redis
+    savePositions(mergedPositions).catch(err => {
+      console.error('Failed to save positions to backend:', err)
+    })
   }, [currentAccountId, allPositions, accounts])
 
   // 导入持仓处理
@@ -171,35 +168,15 @@ function App() {
   }
 
   // 获取当前显示的持仓市值
-  // displayStats 可以是 AccountStats（API返回）或 ProfitSummary（本地计算）
-  const [displayStats, setDisplayStats] = useState<AccountStats | ProfitSummary>({
-    totalProfit: 0,
-    profitRate: 0,
-    totalCost: 0,
-    totalValue: 0,
-  })
-
-  // 更新显示统计
-  useEffect(() => {
-    async function loadStats() {
-      if (currentAccountId) {
-        try {
-          const stats = await getAccountStats(currentAccountId)
-          setDisplayStats(stats)
-        } catch (e) {
-          console.error('Failed to load account stats:', e)
-        }
-      } else {
-        setDisplayStats({
-          totalProfit: summary.totalProfit,
-          profitRate: summary.totalProfitPercent,
-          totalCost: summary.totalCost,
-          totalValue: summary.totalValue,
-        })
-      }
+  const displayStats = useMemo(() => {
+    return {
+      totalProfit: calculatedSummary.totalProfit,
+      totalProfitPercent: calculatedSummary.totalProfitPercent,
+      totalCost: calculatedSummary.totalCost,
+      totalValue: calculatedSummary.totalValue,
+      positions: calculatedSummary.positions,
     }
-    loadStats()
-  }, [currentAccountId, summary])
+  }, [calculatedSummary])
 
   const tabs = [
     { id: 'overview' as const, label: '总览', icon: LineChart },
@@ -249,7 +226,7 @@ function App() {
         </div>
 
         {/* 持仓市值信息 */}
-        {positions.length > 0 && (
+        {filteredPositions.length > 0 && (
           <div className="px-6 py-4 border-b bg-surface-hover">
             <div className="flex items-center gap-2 mb-2">
               <Wallet className="h-4 w-4 text-muted-foreground" />
@@ -261,8 +238,8 @@ function App() {
               {displayStats.totalProfit >= 0 ? '+' : ''}
               {formatCurrency(displayStats.totalProfit)}
             </div>
-            <div className={`text-sm font-medium ${displayStats.profitRate >= 0 ? 'text-up' : 'text-down'}`}>
-              ({displayStats.profitRate >= 0 ? '+' : ''}{formatPercent(displayStats.profitRate)})
+            <div className={`text-sm font-medium ${displayStats.totalProfitPercent >= 0 ? 'text-up' : 'text-down'}`}>
+              ({displayStats.totalProfitPercent >= 0 ? '+' : ''}{formatPercent(displayStats.totalProfitPercent)})
             </div>
           </div>
         )}
@@ -336,10 +313,10 @@ function App() {
         <main className="flex-1 overflow-y-auto px-6 py-6 scrollbar-thin">
           {activeTab === 'overview' && (
             <ProfitDashboard
-              summary={summary}
+              summary={calculatedSummary}
               showClearedPositions={showClearedPositionsInOverview}
               onToggleClearedPositions={() => setShowClearedPositionsInOverview(!showClearedPositionsInOverview)}
-              hasClearedPositions={positions.some(p => p.quantity <= 0)}
+              hasClearedPositions={filteredPositions.some(p => p.quantity <= 0)}
               showClearedProfitCard={showClearedProfitCard}
               onToggleClearedProfitCard={() => setShowClearedProfitCard(!showClearedProfitCard)}
             />
@@ -347,22 +324,23 @@ function App() {
 
           {activeTab === 'positions' && (
             <PositionManager
-              positions={positions}
+              positions={filteredPositions}
               onPositionsChange={handlePositionsChange}
               currentAccountId={currentAccountId}
+              accounts={accounts}
             />
           )}
 
           {activeTab === 'news' && (
-            <NewsFeed symbols={positions.map(p => p.symbol)} />
+            <NewsFeed symbols={filteredPositions.map(p => p.symbol)} />
           )}
 
           {activeTab === 'review' && (
             <ReviewTab
               currentAccountId={currentAccountId}
               accounts={accounts}
-              positions={positions}
-              profitSummary={summary}
+              positions={filteredPositions}
+              profitSummary={calculatedSummary}
             />
           )}
 
@@ -379,7 +357,7 @@ function App() {
           {activeTab === 'data' && (
             <DataExport
               positions={allPositions}
-              summary={summary}
+              summary={calculatedSummary}
               onImport={handleImportPositions}
             />
           )}

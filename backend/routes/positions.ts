@@ -36,4 +36,10 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+router.post('/save-all', async (req, res) => {
+  const { positions } = req.body;
+  await positionService.saveAllPositions(positions);
+  res.json({ success: true });
+});
+
 export default router;

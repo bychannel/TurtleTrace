@@ -62,7 +62,7 @@ export async function getLastActiveAccount(): Promise<Account> {
 }
 
 // 设置最后活跃账户 (前端本地记录，不调用后端)
-export function setLastActiveAccount(id: string): void {
+export function setLastActiveAccount(_id: string): void {
   // 此功能由后端 lastActiveAccountId 字段管理，前端可忽略
 }
 
@@ -143,4 +143,9 @@ export async function getPositions(accountId?: string): Promise<Position[]> {
     return api.get<Position[]>(`/positions?accountId=${accountId}`)
   }
   return api.get<Position[]>('/positions')
+}
+
+// 保存所有持仓到后端
+export async function savePositions(positions: Position[]): Promise<void> {
+  await api.post('/positions/save-all', { positions })
 }
