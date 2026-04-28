@@ -4,14 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "build:stock-db": "node scripts/build-stock-db.js",
-    "dev:server": "tsx backend/index.ts",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:server\"",
-    "server": "tsx backend/index.ts"
+    "frontend:dev": "vite",
+    "frontend:build": "tsc -b && vite build",
+    "frontend:preview": "vite preview",
+    "frontend:lint": "eslint .",
+    "backend:dev": "tsx watch backend/index.ts",
+    "backend:start": "tsx backend/index.ts",
+    "dev": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\""
   },
   "dependencies": {
     "@types/html2canvas": "^0.5.35",

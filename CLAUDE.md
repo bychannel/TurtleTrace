@@ -9,11 +9,12 @@ TurtleTrace (龟迹复盘) is a personal stock portfolio management tool built w
 ## Commands
 
 ```bash
-npm run dev        # Start development server (http://localhost:5173)
-npm run build      # Build for production
-npm run lint       # Run ESLint
-npm run build:stock-db  # Build stock database from scripts
-npm run preview    # Preview production build
+npm run dev              # Start both frontend and backend (http://localhost:5173)
+npm run frontend:dev     # Frontend only
+npm run backend:dev      # Backend only (with watch mode)
+npm run frontend:build   # Build for production
+npm run frontend:preview # Preview production build
+npm run frontend:lint   # Run ESLint
 ```
 
 ## Architecture
@@ -49,4 +50,34 @@ npm run preview    # Preview production build
 
 ## Stock Data
 
-Stock database is built via `npm run build:stock-db` from `scripts/build-stock-db.js` (run from project root). Real-time prices come from the Eastmoney API (行情数据) - no API key required.
+Real-time prices come from the Eastmoney API (行情数据) - no API key required.
+
+## Docker Deployment
+
+详细部署文档请参考 `docker/README.md`
+
+### 快速启动
+
+```bash
+cd docker
+docker-compose up -d --build
+```
+
+### 目录结构
+
+```
+docker/
+├── docker-compose.yml       # 服务编排
+├── Dockerfile.frontend      # 前端镜像
+├── Dockerfile.backend      # 后端镜像
+├── nginx.frontend.conf     # Nginx 配置
+└── README.md              # 部署文档
+```
+
+### 架构
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Nginx (:80) ──proxy──► Backend (:3001) ──► Redis     │
+└─────────────────────────────────────────────────────────┘
+```
